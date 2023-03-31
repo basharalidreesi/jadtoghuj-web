@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en-GB" dir="auto">
+<head>
+	<title>{{ settings.title }}</title>
+	<meta name="description" content="{{ settings.description }}">
+	<meta name="keywords" content="{{ settings.keywords.join(', ') }}">
+	{# <meta name="theme-color" media="(prefers-color-scheme: light)" content=""> #}
+	{# <meta name="theme-color" media="(prefers-color-scheme: dark)" content=""> #}
+	<meta name="viewport" content="width=device-width, initial-scale=1.0 viewport-fit=cover">
+	{# <meta name="robots" content="max-snippet:-1, max-image-preview:large, max-video-preview:-1"> #}
+	<link rel="canonical" href="{{ settings.url }}{{ settings.baseUrl }}{{ page.url }}">
+	<link rel="preload" href="{{ settings.baseUrl }}/assets/css/main.css" as="style">
+	{# <link rel="preload" href="{{ settings.baseUrl }}/assets/css/fonts.css" as="style"> #}
+	<link rel="stylesheet" href="{{ settings.baseUrl }}/assets/css/main.css" />
+	{# <link rel="stylesheet" href="{{ settings.baseUrl }}/assets/css/fonts.css" /> #}
+	<meta property="og:type" content="website">
+	<meta property="og:url" content="{{ settings.url }}{{ settings.baseUrl }}{{ page.url }}">
+	{# <meta property="og:title" content=""> #}
+	{# <meta property="og:description" content="""> #}
+	{# <meta property="og:image" content=""> #}
+	{# <meta property="twitter:card" content="summary_large_image"> #}
+	<meta property="twitter:url" content="{{ settings.url }}{{ settings.baseUrl }}{{ page.url }}">
+	{# <meta property="twitter:title" content=""> #}
+	{# <meta property="twitter:description" content=""> #}
+	{# <meta property="twitter:image" content=""> #}
+	{%- if settings.analytics %}
+	{{ settings.analytics | safe }}
+	{%- endif %}
+	<style>
+		@media (prefers-color-scheme: light) {
+			:root {
+			}
+		}
+		@media (prefers-color-scheme: dark) {
+			:root {
+			}
+		}
+		a[href*="mailto:"],
+		a[href*="//"]:not([href*="{{ settings.url }}{{ settings.baseUrl }}"]) {
+			cursor: alias;
+		}
+	</style>
+</head>
+<body>
+	<header class="header">
+		<div class="logo">
+			<a href="{{ settings.baseUrl }}/">
+				<template>
+					{% getImage settings.logo.url, ["svg"], "/assets/media/", "logo" %}
+				</template>
+				{%- set logo -%}
+					{%- injectSvg "/assets/media/logo.svg" -%}
+				{%- endset %}
+				{{ logo | strip | safe }}
+			</a>
+		</div>
+		<nav class="nav">
+			{%- for group in settings.navigation.groups %}
+			<div class="nav-group">
+			{%- for p in group.pages -%}
+				{%- if p.type == "page" %}
+				<a class="nav-link" href="{{ settings.baseUrl }}{% if p.address != '/' %}/{% endif %}{{ p.address }}{% if p.address != '/' %}/{% endif %}" {%- set url = page.url.replaceAll("/", "") -%} {%- set address = p.address.replaceAll("/", "") -%} {%- if url == address %} aria-current="page" {%- endif %}>
+					<span>
+						{{ p.title }}
+					</span>
+				</a>
+				{%- elif p.type == "external" %}
+				<a class="nav-link" href="{{ p.address }}" target="_blank">
+					<span>
+						{{ p.title }}
+					</span>
+				</a>
+				{%- endif -%}
+			{%- endfor %}
+			</div>
+			{%- endfor %}
+		</nav>
+	</header>
+	<main class="main">
+		{{ content | safe }}
+	</main>
+	<footer class="footer">
+		Footer
+	</footer>
+</body>
+</html>

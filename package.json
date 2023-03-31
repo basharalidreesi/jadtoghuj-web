@@ -1,0 +1,28 @@
+{
+	"name": "jadtoghuj-web",
+	"private": true,
+	"version": "1.0.0",
+	"main": "package.json",
+	"license": "UNLICENSED",
+	"scripts": {
+		"watch:sass": "sass --watch --no-source-map _sass:_site/assets/css",
+		"build:sass": "sass --no-source-map _sass:_site/assets/css",
+		"watch:eleventy": "eleventy --serve",
+		"build:eleventy": "eleventy",
+		"start": "npm-run-all build:sass --parallel watch:*",
+		"build": "npm-run-all build:*"
+	},
+	"keywords": [
+		"eleventy"
+	],
+	"dependencies": {
+		"@11ty/eleventy-img": "^3.0.0",
+		"@portabletext/to-html": "^2.0.0",
+		"@sanity/client": "^5.3.2",
+		"npm-run-all": "^4.1.5",
+		"sass": "^1.58.3"
+	},
+	"devDependencies": {
+		"@11ty/eleventy": "^2.0.0"
+	}
+}

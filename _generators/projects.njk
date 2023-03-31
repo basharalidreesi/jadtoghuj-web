@@ -1,0 +1,26 @@
+---js
+{
+	pagination: {
+		data: "projects",
+		alias: "project",
+		size: 1,
+		addAllPagesToCollections: true,
+		before: function(paginationData) {
+			const addresses = paginationData.filter(project => {
+				return project.address
+			})
+			return addresses
+		},
+	},
+	layout: "main.njk",
+	tags: "project",
+	permalink: "{{ settings.baseUrl }}{{ settings.projectPath }}/{{ project.address }}/",
+	eleventyComputed: {
+		title: "{{ project.title | safe }}",
+		description: "{{ project.description | portableTextToPlainText | safe }}"
+	},
+}
+---
+
+		{{ project.title }}
+		{{ description }}
