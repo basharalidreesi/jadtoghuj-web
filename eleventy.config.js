@@ -8,6 +8,9 @@ module.exports = function(eleventyConfig) {
 	eleventyConfig.addPassthroughCopy({
 		"_assets": "assets"
 	})
+	eleventyConfig.addPassthroughCopy({
+		"_js": "assets/js"
+	})
 
 	eleventyConfig.addFilter("console", function(value) {
 		return util.inspect(value)
@@ -80,7 +83,7 @@ module.exports = function(eleventyConfig) {
 	})
 
 	eleventyConfig.setServerOptions({
-		showAllHosts: true,
+		// showAllHosts: true,
 	})
 
 	return {

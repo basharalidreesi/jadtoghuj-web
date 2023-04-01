@@ -35,13 +35,14 @@
 			{%- else -%}
 			{%- set image0 = null -%}
 			{%- endif -%}
-			{%- if project.looks.length > 0 -%}
+			{%- if project.looks.length > 1 -%}
 			{%- set looks = "looks" -%}
 			{%- else -%}
 			{%- set looks = null -%}
 			{%- endif -%}
 			{%- set contents = [image0, looks] %}
-			<article class="project" data-contents="{{ contents.join(' ') | strip }}" {%- if image0 %} style="--colour-dominant-background: {{ project.image0.palette.background }}; --colour-dominant-foreground: {{ project.image0.palette.foreground }};" {%- endif %}>
+			<article class="project" {%- if project.isRepeated %} data-is-repeated="true" {% endif -%} data-contents="{{ contents.join(' ') | strip }}" {%- if image0 %} style="--colour-dominant-background: {{ project.image0.palette.background }}; --colour-dominant-foreground: {{ project.image0.palette.foreground }};" {%- endif %}>
+				{%- if image0 %}
 				<header class="title">
 					<a href="{{ settings.baseUrl }}{{ settings.projectPath }}/{{ project.address }}/">
 						<span>
@@ -49,16 +50,21 @@
 						</span>
 					</a>
 				</header>
+				{%- endif -%}
 				{%- if image0 %}
-				<div class="image-0" data-aspect-ratio="{{ project.image0.aspectRatio }}">
-					<img src="{{ project.image0.url }}" height="{{ project.image0.height }}" width="{{ project.image0.width }}" alt="" />
+				<div class="image-0">
+					{%- if project.isRepeated and project.image1 %}
+					<img src="{{ project.image1.url }}" alt="" loading="lazy" width="{{ project.image1.width }}" height="{{ project.image1.height }}" />
+					{%- else %}
+					<img src="{{ project.image0.url }}" alt="" loading="lazy" width="{{ project.image0.width }}" height="{{ project.image0.height }}" />
+					{%- endif %}
 				</div>
 				{%- endif -%}
 				{%- if looks %}
 				<div class="looks" data-size="{{ project.looks.length }}">
 					{%- for look in project.looks %}
-					<div class="look" data-aspect-ratio="{{ look.aspectRatio }}">
-						<img src="{{ look.url }}" height="{{ look.height }}" width="{{ look.width }}" alt="" />
+					<div class="look">
+						<img src="{{ look.url }}" alt="" loading="lazy" width="{{ look.width }}" height="{{ look.height }}" />
 					</div>
 					{%- endfor %}
 				</div>

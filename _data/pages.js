@@ -28,38 +28,46 @@ module.exports = async function () {
 				},
 				_type == "projectBlock" => {
 					"projects": projects[]-> {
-						title,
-						"address": address.current,
-						"image0": lookbook[0].asset-> {
-							url,
-							"aspectRatio": metadata.dimensions.aspectRatio,
-							"height": metadata.dimensions.height,
-							"width": metadata.dimensions.width,
-							"lqip": metadata.lqip,
-							"palette": metadata.palette.dominant {
-								background,
-								foreground,
+						isPublic == true => {
+							title,
+							"address": address.current,
+							"image0": lookbook[0].asset-> {
+								url,
+								"height": metadata.dimensions.height,
+								"width": metadata.dimensions.width,
+								"palette": metadata.palette.dominant {
+									background,
+									foreground,
+								},
 							},
-						},
-						"looks": array::compact(looks[]->display.asset-> {
-							url,
-							"aspectRatio": metadata.dimensions.aspectRatio,
-							"height": metadata.dimensions.height,
-							"width": metadata.dimensions.width,
-							"lqip": metadata.lqip,
-						}),
+							"looks": array::compact(looks[]->display.asset-> {
+								url,
+								"height": metadata.dimensions.height,
+								"width": metadata.dimensions.width,
+							}),
+						}
 					}
 				},
 				_type == "categoryBlock" => {
-					"projects": *[_type == "project" && references(categories[]._ref) && isPublic == true] | order(year desc, title asc) {
+					"projects": *[_type == "project" && references(categories[]._ref) && isPublic == true] | order(year desc, lower(title) asc) {
+						_id in array::compact(^.^.contents[].projects[]._ref) => {
+							"isRepeated": true,
+							"image1": lookbook[1].asset-> {
+								url,
+								"height": metadata.dimensions.height,
+								"width": metadata.dimensions.width,
+								"palette": metadata.palette.dominant {
+									background,
+									foreground,
+								},
+							},
+						},
 						title,
 						"address": address.current,
 						"image0": lookbook[0].asset-> {
 							url,
-							"aspectRatio": metadata.dimensions.aspectRatio,
 							"height": metadata.dimensions.height,
 							"width": metadata.dimensions.width,
-							"lqip": metadata.lqip,
 							"palette": metadata.palette.dominant {
 								background,
 								foreground,
@@ -67,10 +75,8 @@ module.exports = async function () {
 						},
 						"looks": array::compact(looks[]->display.asset-> {
 							url,
-							"aspectRatio": metadata.dimensions.aspectRatio,
 							"height": metadata.dimensions.height,
 							"width": metadata.dimensions.width,
-							"lqip": metadata.lqip,
 						}),
 					},
 				},
