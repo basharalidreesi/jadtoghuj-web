@@ -10,9 +10,9 @@
 	{# <meta name="robots" content="max-snippet:-1, max-image-preview:large, max-video-preview:-1"> #}
 	<link rel="canonical" href="{{ settings.url }}{{ settings.baseUrl }}{{ page.url }}">
 	<link rel="preload" href="{{ settings.baseUrl }}/assets/css/main.css" as="style">
-	{# <link rel="preload" href="{{ settings.baseUrl }}/assets/css/fonts.css" as="style"> #}
+	<link rel="preload" href="{{ settings.baseUrl }}/assets/css/fonts.css" as="style">
 	<link rel="stylesheet" href="{{ settings.baseUrl }}/assets/css/main.css" />
-	{# <link rel="stylesheet" href="{{ settings.baseUrl }}/assets/css/fonts.css" /> #}
+	<link rel="stylesheet" href="{{ settings.baseUrl }}/assets/css/fonts.css" />
 	<meta property="og:type" content="website">
 	<meta property="og:url" content="{{ settings.url }}{{ settings.baseUrl }}{{ page.url }}">
 	{# <meta property="og:title" content=""> #}
@@ -66,7 +66,7 @@
 					</span>
 				</a>
 				{%- elif p.type == "external" %}
-				<a class="nav-link" href="{{ p.address }}" target="_blank">
+				<a class="nav-link" href="{{ p.address }}" rel="noopener" target="_blank">
 					<span>
 						{{ p.title }}
 					</span>
@@ -81,7 +81,7 @@
 		{{ content | safe }}
 	</main>
 	<footer class="footer">
-		Footer
+		{{ settings.footer | portableTextToHtml | safe }}
 	</footer>
 </body>
 </html>

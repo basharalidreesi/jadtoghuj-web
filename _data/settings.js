@@ -23,6 +23,19 @@ module.exports = async function () {
 				},
 			},
 		},
+		footer[] {
+			_type == "block" => {
+				..., 
+				children[] {
+					...,
+					_type == "person" => {
+						...,
+						"name": @->.name,
+						"url": @->.url,
+					},
+				},
+			},
+		},
 		url,
 		baseUrl,
 		projectPath,

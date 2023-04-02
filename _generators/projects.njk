@@ -22,5 +22,5 @@
 }
 ---
 
-		{{ project.title }}
-		{{ description }}
+		<div>{{ project.title }}</div>
+		<div>{{ project.description | portableTextToHtml | safe }}</div>

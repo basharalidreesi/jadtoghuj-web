@@ -1,6 +1,7 @@
 const util = require("util")
 const fs = require("fs")
 const Image = require("@11ty/eleventy-img")
+const { uriLooksSafe } = require("@portabletext/to-html")
 const toHTML = require("@portabletext/to-html").toHTML
 
 module.exports = function(eleventyConfig) {
@@ -55,7 +56,27 @@ module.exports = function(eleventyConfig) {
 		return toHTML(value, {
 			components: {
 				block: (props) => {
-					return `<p dir="auto">${props?.children}</p>`
+					return `<p class="text" dir="auto">${props?.children}</p>`
+				},
+				types: {
+					person: ({value}) => {
+						const href = value.url || ""
+						if (value.url && uriLooksSafe(href)) {
+							const rel = href.startsWith("/") ? undefined : "noopener"
+							return `<span class="name"><a class="link" href="${href}" rel="${rel}" target="_blank">${value.name}</a></span>`
+						}
+						return `<span class="name">${value.name}</span>`
+					},
+				},
+				marks: {
+					link: ({children, value}) => {
+						const href = value.url || ""
+						if (uriLooksSafe(href)) {
+							const rel = href.startsWith("/") ? undefined : "noopener"
+							return `<a class="link" href="${href}" rel="${rel}" target="_blank">${children}</a>`
+						}
+						return children
+					},
 				},
 			},
 		})
@@ -74,7 +95,6 @@ module.exports = function(eleventyConfig) {
 						}
 						if (child._type == "person") {
 							return child.name
-							// return "[REF]"
 						}
 					}).join("")
 				})
@@ -82,9 +102,9 @@ module.exports = function(eleventyConfig) {
 		}
 	})
 
-	eleventyConfig.setServerOptions({
-		// showAllHosts: true,
-	})
+	// eleventyConfig.setServerOptions({
+	// 	showAllHosts: true,
+	// })
 
 	return {
 		dir: {

@@ -8,14 +8,14 @@ module.exports = async function () {
 				"projects": projects[]._ref
 			},
 			_type == "categoryBlock" => {
-				"projects": *[_type == "project" && references(categories[]._ref) && isPublic == true && defined(lookbook[])]._id,
+				"projects": *[_type == "project" && references(categories[]._ref) && isPublic == true && defined(lookbook[]) && defined(address.current)]._id,
 			},
 			// _type == "campaignBlock" => {},
 		}
 	}.contents[].projects[])
 	`, {})
 	const query = `
-	*[_type == "project" && _id in $targetProjects && isPublic == true && defined(lookbook[])] {
+	*[_type == "project" && _id in $targetProjects && isPublic == true && defined(lookbook[]) && defined(address.current)] {
 		title,
 		"address": address.current,
 		description[] {

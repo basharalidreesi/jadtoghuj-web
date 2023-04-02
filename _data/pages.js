@@ -28,7 +28,7 @@ module.exports = async function () {
 				},
 				_type == "projectBlock" => {
 					"projects": projects[]-> {
-						isPublic == true => {
+						(isPublic == true && defined(address.current)) => {
 							title,
 							"address": address.current,
 							"image0": lookbook[0].asset-> {
@@ -49,7 +49,7 @@ module.exports = async function () {
 					}
 				},
 				_type == "categoryBlock" => {
-					"projects": *[_type == "project" && references(categories[]._ref) && isPublic == true] | order(year desc, lower(title) asc) {
+					"projects": *[_type == "project" && references(categories[]._ref) && isPublic == true && defined(address.current)] | order(year desc, lower(title) asc) {
 						_id in array::compact(^.^.contents[].projects[]._ref) => {
 							"isRepeated": true,
 							"image1": lookbook[1].asset-> {
