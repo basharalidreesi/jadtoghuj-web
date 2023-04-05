@@ -10,6 +10,9 @@ module.exports = function(eleventyConfig) {
 		"_assets": "assets"
 	})
 	eleventyConfig.addPassthroughCopy({
+		"_static": "/"
+	})
+	eleventyConfig.addPassthroughCopy({
 		"_js": "assets/js"
 	})
 
@@ -52,11 +55,15 @@ module.exports = function(eleventyConfig) {
 		})
 	})
 
+	eleventyConfig.addFilter("preventRunts", function(value) {
+		return value.replace(/ (?=[^ ]*$)/i, "&nbsp;")
+	})
+
 	eleventyConfig.addFilter("portableTextToHtml", function(value) {
 		return toHTML(value, {
 			components: {
 				block: (props) => {
-					return `<p class="text" dir="auto">${props?.children}</p>`
+					return `<p class="text" dir="auto">${props?.children.replace(/ (?=[^ ]*$)/i, "&nbsp;")}</p>`
 				},
 				types: {
 					person: ({value}) => {

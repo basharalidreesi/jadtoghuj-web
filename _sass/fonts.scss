@@ -15,8 +15,8 @@
 @font-face {
 		font-family: "Neue Montreal";
 		src:
-			url("{{ settings.baseUrl }}/assets/fonts/neueMontreal_regular.woff") format("woff"),
-			url("{{ settings.baseUrl }}/assets/fonts/neueMontreal_regular.woff2") format("woff2");
+			url("/assets/fonts/neueMontreal_regular.woff") format("woff"),
+			url("/assets/fonts/neueMontreal_regular.woff2") format("woff2");
 		font-weight: 400;
 		font-style: normal;
 		font-display: block;
@@ -26,8 +26,8 @@
 @font-face {
 	font-family: "Neue Montreal";
 	src:
-		url("{{ settings.baseUrl }}/assets/fonts/neueMontreal_italic.woff") format("woff"),
-		url("{{ settings.baseUrl }}/assets/fonts/neueMontreal_italic.woff2") format("woff2");
+		url("/assets/fonts/neueMontreal_italic.woff") format("woff"),
+		url("/assets/fonts/neueMontreal_italic.woff2") format("woff2");
 	font-weight: 400;
 	font-style: italic;
 	font-display: block;
@@ -37,8 +37,8 @@
 @font-face {
 	font-family: "Neue Montreal";
 	src:
-		url("{{ settings.baseUrl }}/assets/fonts/neueMontreal_bold.woff") format("woff"),
-		url("{{ settings.baseUrl }}/assets/fonts/neueMontreal_bold.woff2") format("woff2");
+		url("/assets/fonts/neueMontreal_bold.woff") format("woff"),
+		url("/assets/fonts/neueMontreal_bold.woff2") format("woff2");
 	font-weight: 700;
 	font-style: normal;
 	font-display: block;
@@ -48,8 +48,8 @@
 @font-face {
 	font-family: "Neue Montreal";
 	src:
-		url("{{ settings.baseUrl }}/assets/fonts/neueMontreal_bold_italic.woff") format("woff"),
-		url("{{ settings.baseUrl }}/assets/fonts/neueMontreal_bold_italic.woff2") format("woff2");
+		url("/assets/fonts/neueMontreal_bold_italic.woff") format("woff"),
+		url("/assets/fonts/neueMontreal_bold_italic.woff2") format("woff2");
 	font-weight: 700;
 	font-style: italic;
 	font-display: block;

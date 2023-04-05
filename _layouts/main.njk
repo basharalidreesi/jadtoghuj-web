@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en-GB" dir="auto">
 <head>
-	<title>{{ settings.title }}</title>
-	<meta name="description" content="{{ settings.description }}">
+	<title>{%- if title and page.url != "/" -%}{{ title }} • {% endif -%}{{ settings.title }}</title>
+	<meta name="description" content="{{ description | default(settings.description) }}">
 	<meta name="keywords" content="{{ settings.keywords.join(', ') }}">
 	{# <meta name="theme-color" media="(prefers-color-scheme: light)" content=""> #}
 	{# <meta name="theme-color" media="(prefers-color-scheme: dark)" content=""> #}
 	<meta name="viewport" content="width=device-width, initial-scale=1.0 viewport-fit=cover">
-	{# <meta name="robots" content="max-snippet:-1, max-image-preview:large, max-video-preview:-1"> #}
+	<meta name="robots" content="max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 	<link rel="canonical" href="{{ settings.url }}{{ settings.baseUrl }}{{ page.url }}">
 	<link rel="preload" href="{{ settings.baseUrl }}/assets/css/main.css" as="style">
 	<link rel="preload" href="{{ settings.baseUrl }}/assets/css/fonts.css" as="style">
@@ -15,34 +15,20 @@
 	<link rel="stylesheet" href="{{ settings.baseUrl }}/assets/css/fonts.css" />
 	<meta property="og:type" content="website">
 	<meta property="og:url" content="{{ settings.url }}{{ settings.baseUrl }}{{ page.url }}">
-	{# <meta property="og:title" content=""> #}
-	{# <meta property="og:description" content="""> #}
+	<meta property="og:title" content="{%- if title and page.url != '/' -%}{{ title }} • {% endif -%}{{ settings.title }}">
+	<meta property="og:description" content="{{ description | default(settings.description) }}">
 	{# <meta property="og:image" content=""> #}
 	{# <meta property="twitter:card" content="summary_large_image"> #}
 	<meta property="twitter:url" content="{{ settings.url }}{{ settings.baseUrl }}{{ page.url }}">
-	{# <meta property="twitter:title" content=""> #}
-	{# <meta property="twitter:description" content=""> #}
+	<meta property="twitter:title" content="{%- if title and page.url != '/' -%}{{ title }} • {% endif -%}{{ settings.title }}">
+	<meta property="twitter:description" content="{{ description | default(settings.description) }}">
 	{# <meta property="twitter:image" content=""> #}
 	<script defer src="{{ settings.baseUrl }}/assets/js/main.js"></script>
 	{%- if settings.analytics %}
 	{{ settings.analytics | safe }}
 	{%- endif %}
-	<style>
-		@media (prefers-color-scheme: light) {
-			:root {
-			}
-		}
-		@media (prefers-color-scheme: dark) {
-			:root {
-			}
-		}
-		a[href*="mailto:"],
-		a[href*="//"]:not([href*="{{ settings.url }}{{ settings.baseUrl }}"]) {
-			cursor: alias;
-		}
-	</style>
 </head>
-<body>
+<body {%- if page.fileSlug == "projects" and image %} style="--colour-dominant-background: {{ colourDominantBackground }}; --colour-dominant-foreground: {{ colourDominantForeground }}; --colour-background-bottom: var(--colour-dominant-background);" {%- endif %} data-layout="{{ page.fileSlug }}">
 	<header class="header">
 		<div class="logo">
 			<a href="{{ settings.baseUrl }}/">

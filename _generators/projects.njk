@@ -17,10 +17,78 @@
 	permalink: "{{ settings.baseUrl }}{{ settings.projectPath }}/{{ project.address }}/",
 	eleventyComputed: {
 		title: "{{ project.title | safe }}",
-		description: "{{ project.description | portableTextToPlainText | safe }}"
+		description: "{{ project.description | portableTextToPlainText | safe }}",
+		image: "{{ project.image0.url }}",
+		colourDominantBackground: "{{ project.image0.palette.background }}",
+		colourDominantForeground: "{{ project.image0.palette.foreground }}",
 	},
 }
 ---
 
-		<div>{{ project.title }}</div>
-		<div>{{ project.description | portableTextToHtml | safe }}</div>
+		<article class="project">
+			<div class="lookbook">
+				{%- for image in project.lookbook %}
+				<div class="image" style="background-image: url({{ image.asset.lqip }}); background-repeat: no-repeat; background-size: 100% 100%;">
+					<img src="{{ image.asset.url }}" alt="" loading="lazy" width="{{ image.asset.width }}" height="{{ image.asset.height }}" />
+				</div>
+				{%- endfor %}
+			</div>
+			<div class="info">
+				<header class="title">
+					<span>{{ project.title }}</span>
+				</header>
+				{%- if project.description %}
+				<div class="description">
+					{{ project.description | portableTextToHtml | safe }}
+				</div>
+				{%- endif -%}
+				{%- if project.year or project.categories %}
+				<div class="data">
+					<p class="text">{{ [project.year, project.categories.join(", ")] | join(" • ") }}</p>
+				</div>
+				{%- endif -%}
+				{%- if project.contributors %}
+				<div class="contributors">
+					<dl>
+						{%- for contributor in project.contributors %}
+						<dt class="text">{{ contributor.role }}</dt>
+						{%- for person in contributor.persons %}
+						{%- if person.url %}
+						<dd class="text">
+							<a class="link" href="{{ person.url }}" rel="noopener" target="_blank">
+								{{ person.name }}
+							</a>
+						</dd>
+						{%- else %}
+						<dd class="text">{{ person.name }}</dd>
+						{%- endif %}
+						{%- endfor -%}
+						{%- endfor %}
+					</dl>
+				</div>
+				{%- endif -%}
+				{%- if project.looks %}
+				<div class="looks">
+					{%- for look in project.looks %}
+					<figure class="look">
+						{%- if look.display %}
+						<img src="{{ look.display.url }}" alt="" loading="lazy" width="{{ look.display.width }}" height="{{ look.display.height }}" />
+						{%- endif -%}
+						{%- if look.title or look.description %}
+						<figcaption>
+							{%- if look.title %}
+							<header>
+								{{ look.title }}
+							</header>
+							{%- endif -%}
+							{%-if look.description %}
+							{{ look.description | portableTextToHtml | safe }}
+							{%- endif %}
+						</figcaption>
+						{%- endif %}
+					</figure>
+					{%- endfor %}
+				</div>
+				{%- endif %}
+			</div>
+		</article>

@@ -27,20 +27,21 @@ module.exports = async function () {
 					"image": image.asset,
 				},
 				_type == "projectBlock" => {
-					"projects": projects[]-> {
+					"projects": projects[] -> {
 						(isPublic == true && defined(address.current)) => {
 							title,
 							"address": address.current,
-							"image0": lookbook[0].asset-> {
+							"image0": lookbook[0].asset -> {
 								url,
 								"height": metadata.dimensions.height,
 								"width": metadata.dimensions.width,
+								"lqip": metadata.lqip,
 								"palette": metadata.palette.dominant {
 									background,
 									foreground,
 								},
 							},
-							"looks": array::compact(looks[]->display.asset-> {
+							"looks": array::compact(looks[]->display.asset -> {
 								url,
 								"height": metadata.dimensions.height,
 								"width": metadata.dimensions.width,
@@ -52,10 +53,11 @@ module.exports = async function () {
 					"projects": *[_type == "project" && references(categories[]._ref) && isPublic == true && defined(address.current)] | order(year desc, lower(title) asc) {
 						_id in array::compact(^.^.contents[].projects[]._ref) => {
 							"isRepeated": true,
-							"image1": lookbook[1].asset-> {
+							"image1": lookbook[1].asset -> {
 								url,
 								"height": metadata.dimensions.height,
 								"width": metadata.dimensions.width,
+								"lqip": metadata.lqip,
 								"palette": metadata.palette.dominant {
 									background,
 									foreground,
@@ -64,16 +66,17 @@ module.exports = async function () {
 						},
 						title,
 						"address": address.current,
-						"image0": lookbook[0].asset-> {
+						"image0": lookbook[0].asset -> {
 							url,
 							"height": metadata.dimensions.height,
 							"width": metadata.dimensions.width,
+							"lqip": metadata.lqip,
 							"palette": metadata.palette.dominant {
 								background,
 								foreground,
 							},
 						},
-						"looks": array::compact(looks[]->display.asset-> {
+						"looks": array::compact(looks[]->display.asset -> {
 							url,
 							"height": metadata.dimensions.height,
 							"width": metadata.dimensions.width,

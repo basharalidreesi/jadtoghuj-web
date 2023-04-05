@@ -16,7 +16,7 @@
 	tags: "page",
 	permalink: "{{ settings.baseUrl }}{{ page.address }}/",
 	eleventyComputed: {
-		title: "{{ page.title | safe }}"
+		title: "{{ page.title | safe }}",
 	},
 }
 ---
@@ -25,7 +25,7 @@
 		{%- for block in page.contents %}
 		<div class="{{ block.type | replaceCamelCase }}" {%- if block.type == "projectBlock" or block.type == "categoryBlock" %} data-size="{{ block.projects.length }}" {%- endif %}>
 			{%- if block.type == "textBlock" %}
-			{# text blocks #}
+			{{ block.text | portableTextToHtml | safe }}
 			{%- elif block.type == "imageBlock" %}
 			{# image blocks #}
 			{%- elif block.type == "projectBlock" or block.type == "categoryBlock" -%}
@@ -41,7 +41,7 @@
 			{%- set looks = null -%}
 			{%- endif -%}
 			{%- set contents = [image0, looks] %}
-			<article class="project" {%- if project.isRepeated %} data-is-repeated="true" {% endif -%} data-contents="{{ contents.join(' ') | strip }}" {%- if image0 %} style="--colour-dominant-background: {{ project.image0.palette.background }}; --colour-dominant-foreground: {{ project.image0.palette.foreground }};" {%- endif %}>
+			<article class="project" {%- if project.isRepeated %} data-is-repeated="true" {% endif -%} data-contents="{{ contents.join(' ') | strip }}" {%- if image0 %} style="--colour-dominant-background: {{ project.image1.palette.background | default(project.image0.palette.background) }}; --colour-dominant-foreground: {{ project.image1.palette.foreground | default(project.image0.palette.foreground) }};" {%- endif %}>
 				{%- if image0 %}
 				<header class="title">
 					<a href="{{ settings.baseUrl }}{{ settings.projectPath }}/{{ project.address }}/">
@@ -52,7 +52,7 @@
 				</header>
 				{%- endif -%}
 				{%- if image0 %}
-				<div class="image-0">
+				<div class="image-0" style="background-image: url({{ project.image1.lqip | default(project.image0.lqip) }}); background-repeat: no-repeat; background-size: auto 30rem; background-position: center;">
 					{%- if project.isRepeated and project.image1 %}
 					<img src="{{ project.image1.url }}" alt="" loading="lazy" width="{{ project.image1.width }}" height="{{ project.image1.height }}" />
 					{%- else %}

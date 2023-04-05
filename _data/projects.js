@@ -17,7 +17,6 @@ module.exports = async function () {
 	const query = `
 	*[_type == "project" && _id in $targetProjects && isPublic == true && defined(lookbook[]) && defined(address.current)] {
 		title,
-		"address": address.current,
 		description[] {
 			_type == "block" => {
 				..., 
@@ -29,6 +28,54 @@ module.exports = async function () {
 						"url": @->.url,
 					},
 				},
+			},
+		},
+		year,
+		"address": address.current,
+		"categories": categories[]->title,
+		contributors[] {
+			role,
+			persons[] -> {
+				name,
+				url,
+			},
+		},
+		looks[] -> {
+			"id": _id,
+			title,
+			"display": display.asset -> {
+				url,
+				"height": metadata.dimensions.height,
+				"width": metadata.dimensions.width,
+			},
+			description[] {
+				_type == "block" => {
+					..., 
+					children[] {
+						...,
+						_type == "person" => {
+							...,
+							"name": @->.name,
+							"url": @->.url,
+						},
+					},
+				},
+			},
+		},
+		lookbook[] {
+			asset -> {
+				url,
+				"height": metadata.dimensions.height,
+				"width": metadata.dimensions.width,
+				"lqip": metadata.lqip,
+			},
+			"looks": looks[]._ref,
+		},
+		"image0": lookbook[0].asset-> {
+			url,
+			"palette": metadata.palette.dominant {
+				background,
+				foreground,
 			},
 		},
 	}
