@@ -1,0 +1,7 @@
+[x] truncate nav groups (max. 2)
+[] campaign blocks
+[] image blocks
+[] text blocks
+[x] filters for project and category blocks
+[] lqip only if not png
+[] different logo possibilities

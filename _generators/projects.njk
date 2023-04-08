@@ -25,70 +25,84 @@
 }
 ---
 
-		<article class="project">
-			<div class="lookbook">
-				{%- for image in project.lookbook %}
-				<div class="image" style="background-image: url({{ image.asset.lqip }}); background-repeat: no-repeat; background-size: 100% 100%;">
-					<img src="{{ image.asset.url }}" alt="" loading="lazy" width="{{ image.asset.width }}" height="{{ image.asset.height }}" />
-				</div>
+		<div class="project-lookbook" data-size="{{ project.lookbook.length }}">
+			{%- for image in project.lookbook %}
+			<div class="lookbook-image" style="background-image: url({{ image.asset.lqip }}); background-repeat: no-repeat; background-size: 100% 100%;">
+				<img src="{{ image.asset.url }}" alt="" loading="lazy" width="{{ image.asset.width }}" height="{{ image.asset.height }}" />
+			</div>
+			{%- endfor -%}
+			{%- if project.lookbook.length > 1 %}
+			<div class="lookbook-controls">
+				<button class="left" data-direction="-1">
+					<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<line x1="24" y1="12" x2="0" y2="12" />
+						<polyline points="8.49,3.51 0,12 8.49,20.49" />
+					</svg>
+				</button>
+				<button class="right" data-direction="1">
+					<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<line x1="0" y1="12" x2="24" y2="12" />
+						<polyline points="15.51,20.49 24,12 15.51,3.51" />
+					</svg>
+				</button>
+			</div>
+			{%- endif %}
+		</div>
+		<div class="project-info">
+			<header class="title">
+				<span>{{ project.title }}</span>
+			</header>
+			{%- if project.description %}
+			<div class="description">
+				{{ project.description | portableTextToHtml | safe }}
+			</div>
+			{%- endif -%}
+			{%- if project.year or project.categories %}
+			<div class="data">
+				<p class="text">{{ [project.year, project.categories.join(", ")] | join(" • ") }}</p>
+			</div>
+			{%- endif -%}
+			{%- if project.contributors %}
+			<div class="contributors">
+				<dl>
+					{%- for contributor in project.contributors %}
+					<dt class="text">{{ contributor.role }}</dt>
+					{%- for person in contributor.persons %}
+					{%- if person.url %}
+					<dd class="text">
+						<a class="link" href="{{ person.url }}" rel="noopener" target="_blank">
+							{{ person.name }}
+						</a>
+					</dd>
+					{%- else %}
+					<dd class="text">{{ person.name }}</dd>
+					{%- endif %}
+					{%- endfor -%}
+					{%- endfor %}
+				</dl>
+			</div>
+			{%- endif -%}
+			{%- if project.looks %}
+			<div class="looks">
+				{%- for look in project.looks %}
+				<figure class="look">
+					{%- if look.display %}
+					<img src="{{ look.display.url }}" alt="" loading="lazy" width="{{ look.display.width }}" height="{{ look.display.height }}" />
+					{%- endif -%}
+					{%- if look.title or look.description %}
+					<figcaption>
+						{%- if look.title %}
+						<header>
+							{{ look.title }}
+						</header>
+						{%- endif -%}
+						{%-if look.description %}
+						{{ look.description | portableTextToHtml | safe }}
+						{%- endif %}
+					</figcaption>
+					{%- endif %}
+				</figure>
 				{%- endfor %}
 			</div>
-			<div class="info">
-				<header class="title">
-					<span>{{ project.title }}</span>
-				</header>
-				{%- if project.description %}
-				<div class="description">
-					{{ project.description | portableTextToHtml | safe }}
-				</div>
-				{%- endif -%}
-				{%- if project.year or project.categories %}
-				<div class="data">
-					<p class="text">{{ [project.year, project.categories.join(", ")] | join(" • ") }}</p>
-				</div>
-				{%- endif -%}
-				{%- if project.contributors %}
-				<div class="contributors">
-					<dl>
-						{%- for contributor in project.contributors %}
-						<dt class="text">{{ contributor.role }}</dt>
-						{%- for person in contributor.persons %}
-						{%- if person.url %}
-						<dd class="text">
-							<a class="link" href="{{ person.url }}" rel="noopener" target="_blank">
-								{{ person.name }}
-							</a>
-						</dd>
-						{%- else %}
-						<dd class="text">{{ person.name }}</dd>
-						{%- endif %}
-						{%- endfor -%}
-						{%- endfor %}
-					</dl>
-				</div>
-				{%- endif -%}
-				{%- if project.looks %}
-				<div class="looks">
-					{%- for look in project.looks %}
-					<figure class="look">
-						{%- if look.display %}
-						<img src="{{ look.display.url }}" alt="" loading="lazy" width="{{ look.display.width }}" height="{{ look.display.height }}" />
-						{%- endif -%}
-						{%- if look.title or look.description %}
-						<figcaption>
-							{%- if look.title %}
-							<header>
-								{{ look.title }}
-							</header>
-							{%- endif -%}
-							{%-if look.description %}
-							{{ look.description | portableTextToHtml | safe }}
-							{%- endif %}
-						</figcaption>
-						{%- endif %}
-					</figure>
-					{%- endfor %}
-				</div>
-				{%- endif %}
-			</div>
-		</article>
+			{%- endif %}
+		</div>

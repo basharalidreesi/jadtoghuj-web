@@ -16,10 +16,6 @@ module.exports = function(eleventyConfig) {
 		"_js": "assets/js"
 	})
 
-	eleventyConfig.addFilter("console", function(value) {
-		return util.inspect(value)
-	})
-
 	eleventyConfig.addAsyncShortcode("getImage", async function(url, formats, path, filename, alt = "") {
 		const stats = await Image(url, {
 			formats,
@@ -53,10 +49,6 @@ module.exports = function(eleventyConfig) {
 		return value.replace(/([A-Z])/g, function($1) {
 			return "-"+$1.toLowerCase();
 		})
-	})
-
-	eleventyConfig.addFilter("preventRunts", function(value) {
-		return value.replace(/ (?=[^ ]*$)/i, "&nbsp;")
 	})
 
 	eleventyConfig.addFilter("portableTextToHtml", function(value) {
@@ -109,9 +101,9 @@ module.exports = function(eleventyConfig) {
 		}
 	})
 
-	// eleventyConfig.setServerOptions({
-	// 	showAllHosts: true,
-	// })
+	eleventyConfig.setServerOptions({
+		showAllHosts: true,
+	})
 
 	return {
 		dir: {

@@ -50,7 +50,7 @@ module.exports = async function () {
 					}
 				},
 				_type == "categoryBlock" => {
-					"projects": *[_type == "project" && references(categories[]._ref) && isPublic == true && defined(address.current)] | order(year desc, lower(title) asc) {
+					"projects": *[_type == "project" && references(^.categories[]._ref) && isPublic == true && defined(address.current)] {
 						_id in array::compact(^.^.contents[].projects[]._ref) => {
 							"isRepeated": true,
 							"image1": lookbook[1].asset -> {
@@ -65,6 +65,7 @@ module.exports = async function () {
 							},
 						},
 						title,
+						year,
 						"address": address.current,
 						"image0": lookbook[0].asset -> {
 							url,
@@ -81,7 +82,7 @@ module.exports = async function () {
 							"height": metadata.dimensions.height,
 							"width": metadata.dimensions.width,
 						}),
-					},
+					} | order(year desc, lower(title) asc),
 				},
 				// _type == "campaignBlock" => {}
 			},

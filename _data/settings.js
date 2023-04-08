@@ -7,6 +7,11 @@ module.exports = async function () {
 		description,
 		keywords,
 		"logo": logo.asset->{url},
+		colours {
+			top,
+			bottom,
+			text,
+		},
 		"navigation": {
 			"groups": navigation[] {
 				"pages": pages[] {
@@ -20,6 +25,11 @@ module.exports = async function () {
 						"type": _type,
 						address,
 					},
+				},
+				truncation {
+					isTruncated,
+					limit,
+					label,
 				},
 			},
 		},
