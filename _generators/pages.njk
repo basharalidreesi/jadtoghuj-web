@@ -27,44 +27,42 @@
 			{%- if block.type == "textBlock" %}
 			{{ block.text | portableTextToHtml | safe }}
 			{%- elif block.type == "imageBlock" %}
-			{# image blocks #}
+			<div class="image">
+				{% sanityImage block.image %}
+			</div>
 			{%- elif block.type == "projectBlock" or block.type == "categoryBlock" -%}
 			{%- for project in block.projects -%}
 			{%- if project.image0 -%}
-			{%- set image0 = "image-0" -%}
+				{%- set image0 = "image" -%}
 			{%- else -%}
-			{%- set image0 = null -%}
+				{%- set image0 = null -%}
 			{%- endif -%}
 			{%- if project.looks.length > 1 -%}
-			{%- set looks = "looks" -%}
+				{%- set looks = "looks" -%}
 			{%- else -%}
-			{%- set looks = null -%}
+				{%- set looks = null -%}
 			{%- endif -%}
 			{%- set contents = [image0, looks] %}
 			<article class="project" {%- if project.isRepeated %} data-is-repeated="true" {% endif -%} data-contents="{{ contents.join(' ') | strip }}" {%- if image0 %} style="--colour-dominant-background: {{ project.image1.palette.background | default(project.image0.palette.background) }}; --colour-dominant-foreground: {{ project.image1.palette.foreground | default(project.image0.palette.foreground) }};" {%- endif %}>
 				{%- if image0 %}
-				<header class="title">
-					<a href="{{ settings.baseUrl }}{{ settings.projectPath }}/{{ project.address }}/">
-						<span>
-							{{ project.title }}
-						</span>
-					</a>
-				</header>
-				{%- endif -%}
-				{%- if image0 %}
-				<div class="image-0" style="background-image: url({{ project.image1.lqip | default(project.image0.lqip) }}); background-repeat: no-repeat; background-size: auto 30rem; background-position: center;">
+				<a class="project-link" href="{{ settings.baseUrl }}{{ settings.projectPath }}/{{ project.address }}/">
+					<span>
+						{{ project.title }}
+					</span>
+				</a>
+				<div class="project-image" style="background-image: url({{ project.image1.lqip | default(project.image0.lqip) }}); background-repeat: no-repeat; background-size: auto 30rem; background-position: center;">
 					{%- if project.isRepeated and project.image1 %}
-					<img src="{{ project.image1.url }}" alt="" loading="lazy" width="{{ project.image1.width }}" height="{{ project.image1.height }}" />
+					{% sanityImage project.image1 %}
 					{%- else %}
-					<img src="{{ project.image0.url }}" alt="" loading="lazy" width="{{ project.image0.width }}" height="{{ project.image0.height }}" />
+					{% sanityImage project.image0 %}
 					{%- endif %}
 				</div>
 				{%- endif -%}
 				{%- if looks %}
-				<div class="looks" data-size="{{ project.looks.length }}">
+				<div class="project-looks" data-size="{{ project.looks.length }}">
 					{%- for look in project.looks %}
-					<div class="look">
-						<img src="{{ look.url }}" alt="" loading="lazy" width="{{ look.width }}" height="{{ look.height }}" />
+					<div class="project-look">
+						{% sanityImage look %}
 					</div>
 					{%- endfor %}
 				</div>

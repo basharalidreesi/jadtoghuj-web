@@ -47,6 +47,8 @@ module.exports = async function () {
 				url,
 				"height": metadata.dimensions.height,
 				"width": metadata.dimensions.width,
+				"extension": metadata.extension,
+				"lqip": metadata.lqip,
 			},
 			description[] {
 				_type == "block" => {
@@ -67,6 +69,7 @@ module.exports = async function () {
 				url,
 				"height": metadata.dimensions.height,
 				"width": metadata.dimensions.width,
+				"extension": metadata.extension,
 				"lqip": metadata.lqip,
 			},
 			"looks": looks[]._ref,

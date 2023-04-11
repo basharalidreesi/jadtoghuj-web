@@ -1,0 +1,104 @@
+@charset "UTF-8";
+
+@mixin visuallyHidden() {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	clip: rect(1px, 1px, 1px, 1px);
+	clip-path: inset(50%);
+	overflow: hidden;
+}
+
+@mixin bubble(
+	$position: relative,
+	$top: null,
+	$right: null,
+	$bottom: null,
+	$left: null,
+	$marginBlock: null,
+	$marginBlockStart: null,
+	$marginBlockEnd: null,
+	$marginInline: null,
+	$marginInlineStart: null,
+	$marginInlineEnd: null,
+	$textColor: null,
+	$borderColor: null,
+	$background: var(--colour-background-top),
+	$boxShadowColor: #{$background},
+) {
+	position: $position;
+	width: fit-content;
+	height: 2.375rem;
+	@if ($top != null) {
+		top: $top;
+	}
+	@if ($right != null) {
+		right: $right;
+	}
+	@if ($bottom != null) {
+		bottom: $bottom;
+	}
+	@if ($left != null) {
+		left: $left;
+	}
+	@if ($marginBlock != null) {
+		margin-block: $marginBlock;
+	}
+	@if ($marginBlockStart != null) {
+		margin-block-start: $marginBlockStart;
+	}
+	@if ($marginBlockEnd != null) {
+		margin-block-end: $marginBlockEnd;
+	}
+	@if ($marginInline != null) {
+		margin-inline: $marginInline;
+	}
+	@if ($marginInlineStart != null) {
+		margin-inline-start: $marginInlineStart;
+	}
+	@if ($marginInlineEnd != null) {
+		margin-inline-end: $marginInlineEnd;
+	}
+	@if ($borderColor != null) {
+		border: 1px solid $borderColor;
+	} @else {
+		border: 1px solid;
+	}
+	border-radius: 9999px;
+	background: $background;
+	box-shadow: 0 0 0.125rem 0 $boxShadowColor;
+	transition: box-shadow 0.05s linear;
+	z-index: 50;
+	& > * {
+		display: block;
+		width: 100%;
+		height: 100%;
+		padding: 0.625rem 1rem;
+		white-space: nowrap;
+		@if ($textColor != null) {
+			--colour-text: #{$textColor};
+		}
+	}
+	@media (any-hover: hover) {
+		&:hover {
+			box-shadow: 0 0 0.25rem 0 $boxShadowColor;
+		}
+	}
+}
+
+@mixin floatingProject(
+	$background: null,
+) {
+	width: fit-content;
+	max-width: 100%;
+	margin-inline: clamp(1rem + 0.5rem, 2.5vw, 5rem);
+	&::before {
+		left: -1rem;
+		width: calc(100% + 2rem);
+		@if ($background != null) {
+			background: $background;
+		}
+	}
+}

@@ -1,0 +1,151 @@
+[data-layout="pages"] {
+
+	.text-block {
+		.text {
+			text-align: justify;
+			text-align-last: center;
+			margin-inline: auto;
+			@media (max-width: 768px) {
+				text-align: center;
+			}
+		}
+	}
+
+	.image-block {
+		img {
+			display: block;
+			width: 100%;
+			height: auto;
+		}
+	}
+
+	.project-block,
+	.category-block {
+		& {
+			display: flex;
+			flex-flow: row wrap;
+			justify-content: center;
+		}
+		& + .project-block {
+			margin-block-start: 1rem;
+		}
+	}
+
+	.project {
+		& {
+			display: flex;
+			position: relative;
+			flex-flow: column nowrap;
+			width: 100%;
+			padding-block: 1rem;
+		}
+		&::before {
+			content: "";
+			display: block;
+			position: absolute;
+			top: 0;
+			left: calc(-1rem - env(safe-area-inset-left, 0px));
+			width: calc(100% + 2rem + env(safe-area-inset-left, 0px) + env(safe-area-inset-right, 0px));
+			height: 100%;
+			background: linear-gradient(to bottom, transparent, var(--colour-dominant-background));
+			z-index: -1;
+		}
+		&[data-contents="image"] {
+			& {
+				@include floatingProject();
+			}
+		}
+		&[data-contents="looks"] {
+			& {
+				@include floatingProject(
+					$background: radial-gradient(closest-side, var(--colour-dominant-background), transparent),
+				);
+			}
+			.project-link {
+				margin-block-end: calc(2.375rem / -2);
+				transform: translateY(calc(1rem + 2px + 12.5rem - 2.375rem / 2));
+			}
+			.project-looks {
+				height: 30rem;
+			}
+		}
+		&[data-contents~="image"][data-contents~="looks"] {
+			.project-looks {
+				margin-block-start: -10rem;
+			}
+			.project-looks[data-size="1"] {
+				display: none;
+			}
+			&[data-is-repeated="true"] {
+				& {
+					@include floatingProject();
+				}
+				.project-looks {
+					display: none;
+				}
+			}
+		}
+		img {
+			display: block;
+			height: 100%;
+			width: auto;
+		}
+	}
+
+	.project-link {
+		& {
+			@include bubble(
+				$marginBlockStart: calc(2.375rem / -2),
+				$marginInline: auto,
+				$textColor: var(--colour-dominant-foreground),
+				$borderColor: var(--colour-dominant-foreground),
+				$background: var(--colour-dominant-background),
+				$boxShadowColor: var(--colour-dominant-background),
+			);
+			order: 2;
+		}
+		@media (any-hover: hover) {
+			&:hover {
+				text-decoration: underline;
+			}
+		}
+	}
+
+	.project-image {
+		& {
+			order: 1;
+			height: 30rem;
+		}
+		img {
+			margin: auto;
+			max-width: 100%;
+			object-fit: cover;
+		}
+		& + .project-looks {
+			margin-block-start: 1rem;
+		}
+	}
+
+	.project-looks {
+		& {
+			order: 3;
+			display: flex;
+			flex-flow: row nowrap;
+			justify-content: center;
+			position: relative;
+			left: calc(env(safe-area-inset-left, 0px) * -1);
+			height: 20rem;
+			width: calc(100% + 2rem + env(safe-area-inset-left, 0px) + env(safe-area-inset-right, 0px));
+			margin-inline: -1rem;
+			overflow: hidden;
+		}
+		.project-look {
+			height: 100%;
+			margin-inline: clamp(0.5rem, 2.5vw, 5rem);
+		}
+		img {
+			filter: drop-shadow(0 0 0.0625rem var(--colour-dominant-foreground));
+		}
+	}
+
+}

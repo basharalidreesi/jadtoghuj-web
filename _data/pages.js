@@ -24,8 +24,15 @@ module.exports = async function () {
 					},
 				},
 				_type == "imageBlock" => {
-					"image": image.asset,
+					"image": asset -> {
+						url,
+						"height": metadata.dimensions.height,
+						"width": metadata.dimensions.width,
+						"extension": metadata.extension,
+						"lqip": metadata.lqip,
+					},
 				},
+				// _type == "lookBlock" => {},
 				_type == "projectBlock" => {
 					"projects": projects[] -> {
 						(isPublic == true && defined(address.current)) => {
@@ -35,6 +42,7 @@ module.exports = async function () {
 								url,
 								"height": metadata.dimensions.height,
 								"width": metadata.dimensions.width,
+								"extension": metadata.extension,
 								"lqip": metadata.lqip,
 								"palette": metadata.palette.dominant {
 									background,
@@ -45,6 +53,8 @@ module.exports = async function () {
 								url,
 								"height": metadata.dimensions.height,
 								"width": metadata.dimensions.width,
+								"extension": metadata.extension,
+								"lqip": metadata.lqip,
 							}),
 						}
 					}
@@ -57,6 +67,7 @@ module.exports = async function () {
 								url,
 								"height": metadata.dimensions.height,
 								"width": metadata.dimensions.width,
+								"extension": metadata.extension,
 								"lqip": metadata.lqip,
 								"palette": metadata.palette.dominant {
 									background,
@@ -71,6 +82,7 @@ module.exports = async function () {
 							url,
 							"height": metadata.dimensions.height,
 							"width": metadata.dimensions.width,
+							"extension": metadata.extension,
 							"lqip": metadata.lqip,
 							"palette": metadata.palette.dominant {
 								background,
@@ -81,6 +93,8 @@ module.exports = async function () {
 							url,
 							"height": metadata.dimensions.height,
 							"width": metadata.dimensions.width,
+							"extension": metadata.extension,
+							"lqip": metadata.lqip,
 						}),
 					} | order(year desc, lower(title) asc),
 				},

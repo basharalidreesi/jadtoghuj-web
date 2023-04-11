@@ -28,7 +28,7 @@
 		<div class="project-lookbook" data-size="{{ project.lookbook.length }}">
 			{%- for image in project.lookbook %}
 			<div class="lookbook-image" style="background-image: url({{ image.asset.lqip }}); background-repeat: no-repeat; background-size: 100% 100%;">
-				<img src="{{ image.asset.url }}" alt="" loading="lazy" width="{{ image.asset.width }}" height="{{ image.asset.height }}" />
+				{% sanityImage image.asset %}
 			</div>
 			{%- endfor -%}
 			{%- if project.lookbook.length > 1 %}
@@ -87,7 +87,7 @@
 				{%- for look in project.looks %}
 				<figure class="look">
 					{%- if look.display %}
-					<img src="{{ look.display.url }}" alt="" loading="lazy" width="{{ look.display.width }}" height="{{ look.display.height }}" />
+					{% sanityImage look.display %}
 					{%- endif -%}
 					{%- if look.title or look.description %}
 					<figcaption>

@@ -31,14 +31,18 @@ module.exports = function(eleventyConfig) {
 		}
 		return Image.generateHTML(stats, attributes)
 	})
-
+	
 	eleventyConfig.addShortcode("injectSvg", function(path) {
 		const data = fs.readFileSync("./_site" + path, 
-			function(err, contents) {
-			   if (err) return err
-			   return contents
-			})
+		function(err, contents) {
+			if (err) return err
+			return contents
+		})
 		return data.toString("utf8")
+	})
+	
+	eleventyConfig.addShortcode("sanityImage", function(imageObject) {
+		return `<img src="${ imageObject?.url }" alt="" loading="lazy" width="${ imageObject?.width }" height="${ imageObject?.height }" />`
 	})
 
 	eleventyConfig.addFilter("strip", function(value) {
