@@ -6,7 +6,7 @@ class Main {
 			<html lang="en-GB" dir="auto">
 			<head>
 				<title>${title(data)}</title>
-				<meta name="description" content="${description(data)}">
+				<meta name="description" content="${description(data, eleventy)}">
 				<meta name="keywords" content="${keywords(data)}">
 				<meta name="theme-color" content="${themeColour(data)}">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0 viewport-fit=cover">
@@ -18,12 +18,12 @@ class Main {
 				<link rel="stylesheet" href="${baseUrl(data)}/assets/css/fonts.css" />
 				<meta property="og:type" content="website">
 				<meta property="og:title" content="${title(data)}">
-				<meta property="og:description" content="${description(data)}">
+				<meta property="og:description" content="${description(data, eleventy)}">
 				<meta property="og:url" content="${canonical(data)}">
 				<!-- <meta property="og:image" content=""> -->
 				<!-- <meta property="twitter:card" content="summary_large_image"> -->
 				<meta property="twitter:title" content="${title(data)}">
-				<meta property="twitter:description" content="${description(data)}">
+				<meta property="twitter:description" content="${description(data, eleventy)}">
 				<meta property="twitter:url" content="${canonical(data)}">
 				<!-- <meta property="twitter:image" content=""> -->
 				<script defer src="${baseUrl(data)}/assets/js/main.js"></script>
@@ -58,61 +58,59 @@ class Main {
 }
 
 const title = (data) => {
-	const pageTitle = data.page.url === "/" ? "" : data.title
-	const siteTitle = data.settings.title || ""
-	return [pageTitle, siteTitle]?.filter(Boolean)?.join(" • ")
+	const pageTitle = data.page?.url === "/" ? "" : data.page?.title
+	const projectTitle = data.project?.title
+	const siteTitle = data.settings?.title || ""
+	return [pageTitle || projectTitle, siteTitle]?.filter(Boolean)?.join(" • ")
 }
 
-const description = (data) => {
-	const pageDescription = data.description || ""
-	const siteDescription = data.settings.description || ""
-	return [pageDescription, siteDescription]?.filter(Boolean)?.join(" • ")
+const description = (data, eleventy) => {
+	const pageDescription = eleventy.portableTextToPlainText(data.page?.description) || ""
+	const projectDescription = eleventy.portableTextToPlainText(data.project?.description) || ""
+	const siteDescription = data.settings?.description || ""
+	return [pageDescription || projectDescription, siteDescription]?.filter(Boolean)?.join(" • ")
 }
 
 const keywords = (data) => {
-	return data.settings.keywords?.filter(Boolean)?.join(", ")
+	return data.settings?.keywords?.filter(Boolean)?.join(", ")
 }
 
 const themeColour = (data) => {
-	return data.settings.colours?.top || ""
+	return data.settings?.colours?.top || ""
 }
 
 const canonical = (data) => {
-	const url = data.settings.url
-	const baseUrl = data.settings.baseUrl
-	const pageUrl = data.page.url
+	const url = data.settings?.url
+	const baseUrl = data.settings?.baseUrl
+	const pageUrl = data.page?.url
 	return [url, baseUrl, pageUrl]?.filter(Boolean)?.join("")
 }
 
 const baseUrl = (data) => {
-	return data.settings.baseUrl || ""
+	return data.settings?.baseUrl || ""
 }
 
 const analytics = (data) => {
-	return data.settings.analytics || ""
+	return data.settings?.analytics || ""
 }
 
 const colours = (data, eleventy) => {
 	const style = {
-		"--colour-1": data.settings.colours.text,
-		"--colour-2": data.settings.colours.top,
-		"--colour-3": data.settings.colours.bottom,
+		"--colour-1": data.settings?.colours?.text,
+		"--colour-2": data.settings?.colours?.top,
+		"--colour-3": data.settings?.colours?.bottom,
 	}
 	return `<style> :root { ${eleventy.formatCss(style)} } </style>`
 }
 
 const bodyOptions = (data, eleventy) => {
-	const options = []
 	const style = {
-		"--colour-dominant-background": data.colourDominantBackground,
-		"--colour-dominant-foreground": data.colourDominantForeground,
+		"--colour-dominant-background": data.project?.image0?.palette?.background,
+		"--colour-dominant-foreground": data.project?.image0?.palette?.foreground,
 		"--colour-background-bottom": "var(--colour-dominant-background)",
 	}
-	const dataLayout = data.page.fileSlug
-	if (data.page.fileSlug === "projects" && data.image) {
-		options.push(`style="${eleventy.formatCss(style)}"`)
-	}
-	options.push(`data-layout="${dataLayout}"`)
+	const dataLayout = `data-layout="${data.page?.fileSlug}"`
+	const options = [data.page?.fileSlug === "projects" && data.project?.image0?.url ? `style="${eleventy.formatCss(style)}"` : "", dataLayout]
 	return options?.filter(Boolean)?.join(" ")
 }
 
@@ -129,7 +127,7 @@ const logo = (data, eleventy) => {
 			</g>
 		</svg>
 	`
-	return data.settings.logo?.url ? eleventy.createSvgFromUrl(data.settings.logo?.url) : defaultLogo
+	return data.settings?.logo?.url ? eleventy.createSvgFromUrl(data.settings?.logo?.url) : defaultLogo
 }
 
 const navButton = `
@@ -149,13 +147,13 @@ const navExpand = `
 const nav = (data, eleventy) => {
 	const navLink = (page, isSubgroup = false) => {
 		const { type, address, title } = page
-		const className = isSubgroup ? `class="nav-sublink"` : `class="nav-link"`
+		const _class = isSubgroup ? `class="nav-sublink"` : `class="nav-link"`
 		const href = type === "page" ? `href="${(baseUrl(data) + "/" + address.replaceAll("/", "") + "/").replace("//", "/")}"` : (type === "external" ? `href="${address}"` : "")
 		const rel = type === "external" ? `rel="noopener"` : ""
 		const target = type === "external" ? `target="_blank"` : ""
-		const ariaCurrent = data.page.url.replaceAll("/", "") === address.replaceAll("/", "") ? `aria-current="page"` : ""
+		const ariaCurrent = data.page?.url?.replaceAll("/", "") === address.replaceAll("/", "") ? `aria-current="page"` : ""
 		const ariaRole = isSubgroup ? `aria-role="menuitem"` : ""
-		const options = [className, href, rel, target, ariaCurrent, ariaRole]
+		const options = [_class, href, rel, target, ariaCurrent, ariaRole]
 		return (`
 			<a ${options?.filter(Boolean)?.join(" ")}>
 				<span>
@@ -164,7 +162,7 @@ const nav = (data, eleventy) => {
 			</a>
 		`).replace(/^\t\t\t/gm, "\t".repeat(4))
 	}
-	return data.settings.navigation?.groups?.map((group, index) => {
+	return data.settings?.navigation?.groups?.map((group, index) => {
 		const isTruncated = group.truncation?.isTruncated && group.pages?.length > group.truncation?.limit
 		const limit = isTruncated ? group.truncation?.limit : group.pages?.length
 		return `
@@ -195,7 +193,7 @@ const content = (data) => {
 }
 
 const footer = (data, eleventy) => {
-	return eleventy.portableTextToHtml(data.settings.footer)
+	return eleventy.portableTextToHtml(data.settings?.footer)
 }
 
 module.exports = Main

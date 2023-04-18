@@ -141,7 +141,7 @@
 			margin-block-start: 1rem;
 		}
 	}
-	.title {
+	.project-title {
 		& {
 			@include bubble(
 				$marginBlockStart: calc(2.375rem / -2),
@@ -153,21 +153,21 @@
 			cursor: pointer;
 		}
 	}
-	.contributors {
+	.project-contributions {
 		dd {
 			padding-left: 2rem;
 		}
 	}
-	.looks {
+	.project-looks {
 		& {
-			display: none;
+			display: flex;
 			flex-flow: row wrap;
 			justify-content: center;
 			margin-block-start: 0.5rem;
 			margin-block-end: -0.5rem;
 			margin-inline: -0.5rem;
 		}
-		.look {
+		.project-look {
 			& {
 				display: flex;
 				flex-flow: column nowrap;

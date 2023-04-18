@@ -56,8 +56,9 @@ module.exports = function(eleventyConfig) {
 	})
 
 	eleventyConfig.addFilter("formatCss", function(value) {
+		if (!value) { return }
 		return Object.entries(value)?.map(rule => {
-			return `${rule[0]}: ${rule[1]};`
+			return rule[0] && rule[1] ? `${rule[0]}: ${rule[1]};` : ""
 		})?.filter(Boolean)?.join(" ")
 	})
 
