@@ -17,6 +17,7 @@
 	$right: null,
 	$bottom: null,
 	$left: null,
+	$margin: null,
 	$marginBlock: null,
 	$marginBlockStart: null,
 	$marginBlockEnd: null,
@@ -27,9 +28,13 @@
 	$borderColor: null,
 	$background: var(--colour-background-top),
 	$boxShadowColor: #{$background},
+	$truncate: false,
 ) {
 	position: $position;
 	width: fit-content;
+	@if ($truncate == true) {
+		max-width: 100%;
+	}
 	height: 2.375rem;
 	@if ($top != null) {
 		top: $top;
@@ -42,6 +47,9 @@
 	}
 	@if ($left != null) {
 		left: $left;
+	}
+	@if ($margin != null) {
+		margin: $margin;
 	}
 	@if ($marginBlock != null) {
 		margin-block: $marginBlock;
@@ -77,6 +85,10 @@
 		height: 100%;
 		padding: 0.625rem 1rem;
 		white-space: nowrap;
+		@if ($truncate == true) {
+			text-overflow: ellipsis;
+			overflow: hidden;
+		}
 		@if ($textColor != null) {
 			--colour-text: #{$textColor};
 		}

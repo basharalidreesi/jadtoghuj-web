@@ -12,7 +12,7 @@
 			return addresses
 		},
 	},
-	layout: "main.njk",
+	layout: "main.11ty.js",
 	tags: "page",
 	permalink: "{{ settings.baseUrl }}{{ page.address }}/",
 	eleventyComputed: {
@@ -23,12 +23,12 @@
 
 		{%- if page.contents -%}
 		{%- for block in page.contents %}
-		<div class="{{ block.type | replaceCamelCase }}" {%- if block.type == "projectBlock" or block.type == "categoryBlock" %} data-size="{{ block.projects.length }}" {%- endif %}>
+		<div class="{{ block.type | camelCaseToKebabCase }}" {%- if block.type == "projectBlock" or block.type == "categoryBlock" %} data-size="{{ block.projects.length }}" {%- endif %}>
 			{%- if block.type == "textBlock" %}
 			{{ block.text | portableTextToHtml | safe }}
 			{%- elif block.type == "imageBlock" %}
 			<div class="image">
-				{% sanityImage block.image %}
+				{{ block.image | sanityImage | safe }}
 			</div>
 			{%- elif block.type == "projectBlock" or block.type == "categoryBlock" -%}
 			{%- for project in block.projects -%}
@@ -37,24 +37,40 @@
 			{%- else -%}
 				{%- set image0 = null -%}
 			{%- endif -%}
+			{%- if project.video0 -%}
+				{%- set video0 = "video" -%}
+			{%- else -%}
+				{%- set video0 = null -%}
+			{%- endif -%}
 			{%- if project.looks.length > 1 -%}
 				{%- set looks = "looks" -%}
 			{%- else -%}
 				{%- set looks = null -%}
 			{%- endif -%}
-			{%- set contents = [image0, looks] %}
+			{%- set contents = [image0, video0, looks] %}
 			<article class="project" {%- if project.isRepeated %} data-is-repeated="true" {% endif -%} data-contents="{{ contents.join(' ') | strip }}" {%- if image0 %} style="--colour-dominant-background: {{ project.image1.palette.background | default(project.image0.palette.background) }}; --colour-dominant-foreground: {{ project.image1.palette.foreground | default(project.image0.palette.foreground) }};" {%- endif %}>
-				{%- if image0 %}
+				{%- if image0 or video0 %}
 				<a class="project-link" href="{{ settings.baseUrl }}{{ settings.projectPath }}/{{ project.address }}/">
 					<span>
 						{{ project.title }}
 					</span>
 				</a>
+				{%- endif -%}
+				{%- if image0 %}
 				<div class="project-image" style="background-image: url({{ project.image1.lqip | default(project.image0.lqip) }}); background-repeat: no-repeat; background-size: auto 30rem; background-position: center;">
 					{%- if project.isRepeated and project.image1 %}
-					{% sanityImage project.image1 %}
+					{{ project.image1 | sanityImage | safe }}
 					{%- else %}
-					{% sanityImage project.image0 %}
+					{{ project.image0 | sanityImage | safe }}
+					{%- endif %}
+				</div>
+				{%- endif -%}
+				{%- if video0 %}
+				<div class="project-video">
+					{%- if project.isRepeated and project.video1 %}
+					{{ project.video1.url | parseUrl | createVideoFromUrl | safe }}
+					{%- else %}
+					{{ project.video0.url | parseUrl | createVideoFromUrl | safe }}
 					{%- endif %}
 				</div>
 				{%- endif -%}
@@ -62,7 +78,7 @@
 				<div class="project-looks" data-size="{{ project.looks.length }}">
 					{%- for look in project.looks %}
 					<div class="project-look">
-						{% sanityImage look %}
+						{{ look | sanityImage | safe }}
 					</div>
 					{%- endfor %}
 				</div>

@@ -7,7 +7,7 @@ const jad = {
 		navButtons: document.querySelectorAll(".nav-expand"),
 		// lookbook
 		lookbook: document.querySelector(".project-lookbook"),
-		lookbookImages: document.querySelectorAll(".lookbook-image"),
+		lookbookEntries: document.querySelectorAll(".lookbook-entry"),
 		lookbookControls: document.querySelectorAll(".lookbook-controls > *"),
 	},
 
@@ -24,7 +24,7 @@ const jad = {
 		enableNavButtons: function() {
 			jad.lexicon.navButtons.forEach((button) => {
 				button.addEventListener("click", () => {
-					const menu = document.getElementById(button.getAttribute("aria-controls"))
+					const menu = document.getElementById(button.getAttribute("aria-controls"));
 					if (button.getAttribute("aria-expanded") === "false") {
 						button.setAttribute("aria-expanded", "true");
 						menu.classList.add("active");
@@ -33,6 +33,20 @@ const jad = {
 					button.setAttribute("aria-expanded", "false");
 					menu.classList.remove("active");
 				});
+			});
+			window.addEventListener("click", (event) => {
+				if (!event.target.closest(".nav.active") && !event.target.closest(".nav-subgroup.active") && !event.target.closest('.nav-expand[aria-expanded="true"]')) {
+					const activeNav = document.querySelector(".nav.active");
+					const activeMenus = document.querySelectorAll(".nav-subgroup.active");
+					const activeButtons = document.querySelectorAll('.nav-expand[aria-expanded="true"]');
+					activeNav?.classList.remove("active");
+					activeMenus?.forEach((menu) => {
+						menu?.classList.remove("active");
+					});
+					activeButtons?.forEach((button) => {
+						button?.setAttribute("aria-expanded", "false");
+					});
+				}
 			});
 		},
 	},
@@ -58,7 +72,7 @@ const jad = {
 				root: jad.lexicon.lookbook,
 				rootMargin: "0px -50% 0px -50%",
 			});
-			jad.lexicon.lookbookImages.forEach((image) => {
+			jad.lexicon.lookbookEntries.forEach((image) => {
 				observer.observe(image);
 			});
 		},

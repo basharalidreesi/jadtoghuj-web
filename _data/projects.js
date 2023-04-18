@@ -65,20 +65,33 @@ module.exports = async function () {
 			},
 		},
 		lookbook[] {
-			asset -> {
+			"type": _type,
+			_type == "image" => {
+				asset -> {
+					url,
+					"height": metadata.dimensions.height,
+					"width": metadata.dimensions.width,
+					"extension": metadata.extension,
+					"lqip": metadata.lqip,
+				},
+			},
+			_type == "video" => {
 				url,
-				"height": metadata.dimensions.height,
-				"width": metadata.dimensions.width,
-				"extension": metadata.extension,
-				"lqip": metadata.lqip,
 			},
 			"looks": looks[]._ref,
 		},
-		"image0": lookbook[0].asset-> {
-			url,
-			"palette": metadata.palette.dominant {
-				background,
-				foreground,
+		lookbook[0]._type == "image" => {
+			"image0": lookbook[0].asset-> {
+				url,
+				"palette": metadata.palette.dominant {
+					background,
+					foreground,
+				},
+			},
+		},
+		lookbook[0]._type == "video" => {
+			"video0": lookbook[0] {
+				url,
 			},
 		},
 	}

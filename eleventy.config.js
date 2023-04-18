@@ -1,58 +1,64 @@
-const util = require("util")
-const fs = require("fs")
-const Image = require("@11ty/eleventy-img")
-const { uriLooksSafe } = require("@portabletext/to-html")
 const toHTML = require("@portabletext/to-html").toHTML
+const { uriLooksSafe } = require("@portabletext/to-html")
 
 module.exports = function(eleventyConfig) {
-
-	eleventyConfig.addPassthroughCopy({
-		"_assets": "assets"
-	})
-	eleventyConfig.addPassthroughCopy({
-		"_static": "/"
-	})
-	eleventyConfig.addPassthroughCopy({
-		"_js": "assets/js"
+	
+	eleventyConfig.addFilter("sanityImage", function(value) {
+		return `<img src="${ value?.url }" alt="" loading="lazy" width="${ value?.width }" height="${ value?.height }" />`
 	})
 
-	eleventyConfig.addAsyncShortcode("getImage", async function(url, formats, path, filename, alt = "") {
-		const stats = await Image(url, {
-			formats,
-			urlPath: path,
-			outputDir: `./_site${path}`,
-			filenameFormat: function() {
-				return `${filename}.${formats}`
-			}
+	eleventyConfig.addAsyncFilter("createSvgFromUrl", function(value) {
+		if (!value) { return }
+		return fetch(value).then(async function (response) {
+			return response.text()
 		})
-		const attributes = {
-			alt,
-			decoding: "async",
+	})
+
+	eleventyConfig.addFilter("parseUrl", function(value) {
+		const hostname = new URL(value).hostname.replace("www.", "")
+		return {
+			url: value,
+			hostname: hostname,
 		}
-		return Image.generateHTML(stats, attributes)
 	})
-	
-	eleventyConfig.addShortcode("injectSvg", function(path) {
-		const data = fs.readFileSync("./_site" + path, 
-		function(err, contents) {
-			if (err) return err
-			return contents
-		})
-		return data.toString("utf8")
-	})
-	
-	eleventyConfig.addShortcode("sanityImage", function(imageObject) {
-		return `<img src="${ imageObject?.url }" alt="" loading="lazy" width="${ imageObject?.width }" height="${ imageObject?.height }" />`
+
+	eleventyConfig.addAsyncFilter("createVideoFromUrl", function(value) {
+		if (!value.url || !value.hostname) { return }
+		const url = encodeURIComponent(value.url)
+		if (value.hostname === "youtube.com" || value.hostname === "youtu.be") {
+			return fetch(`https://youtube.com/oembed?url=${url}&format=json`).then(async function (response) {
+				return response.json().then(function (data) {
+					return data.html
+						? data.html.replace("youtube.com", "youtube-nocookie.com")
+						: ""
+				})
+			})
+		}
+		if (value.hostname === "vimeo.com") {
+			return fetch(`https://vimeo.com/api/oembed.json?url=${url}`).then(async function (response) {
+				return response.json().then(function (data) {
+					return data.html
+						? data.html
+						: ""
+				})
+			})
+		}
 	})
 
 	eleventyConfig.addFilter("strip", function(value) {
 		return value.replace(/\s+/g, " ").trim()
 	})
 
-	eleventyConfig.addFilter("replaceCamelCase", function(value) {
+	eleventyConfig.addFilter("camelCaseToKebabCase", function(value) {
 		return value.replace(/([A-Z])/g, function($1) {
 			return "-"+$1.toLowerCase();
 		})
+	})
+
+	eleventyConfig.addFilter("formatCss", function(value) {
+		return Object.entries(value)?.map(rule => {
+			return `${rule[0]}: ${rule[1]};`
+		})?.filter(Boolean)?.join(" ")
 	})
 
 	eleventyConfig.addFilter("portableTextToHtml", function(value) {
@@ -107,6 +113,16 @@ module.exports = function(eleventyConfig) {
 
 	eleventyConfig.setServerOptions({
 		showAllHosts: true,
+	})
+
+	eleventyConfig.addPassthroughCopy({
+		"_assets": "assets"
+	})
+	eleventyConfig.addPassthroughCopy({
+		"_static": "/"
+	})
+	eleventyConfig.addPassthroughCopy({
+		"_js": "assets/js"
 	})
 
 	return {

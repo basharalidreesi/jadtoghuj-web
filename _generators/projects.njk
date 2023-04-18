@@ -12,7 +12,7 @@
 			return addresses
 		},
 	},
-	layout: "main.njk",
+	layout: "main.11ty.js",
 	tags: "project",
 	permalink: "{{ settings.baseUrl }}{{ settings.projectPath }}/{{ project.address }}/",
 	eleventyComputed: {
@@ -26,10 +26,18 @@
 ---
 
 		<div class="project-lookbook" data-size="{{ project.lookbook.length }}">
-			{%- for image in project.lookbook %}
-			<div class="lookbook-image" style="background-image: url({{ image.asset.lqip }}); background-repeat: no-repeat; background-size: 100% 100%;">
-				{% sanityImage image.asset %}
+			{%- for entry in project.lookbook -%}
+			{%- if entry.type == "image" %}
+			<div class="lookbook-entry" style="background-image: url({{ entry.asset.lqip }}); background-repeat: no-repeat; background-size: 100% 100%;" data-type="image">
+				{{ entry.asset | sanityImage | safe }}
 			</div>
+			{%- elif entry.type == "video" %}
+			<div class="lookbook-entry" data-type="video">
+				<div>
+					{{ entry.url | parseUrl | createVideoFromUrl | safe }}
+				</div>
+			</div>
+			{%- endif -%}
 			{%- endfor -%}
 			{%- if project.lookbook.length > 1 %}
 			<div class="lookbook-controls">
@@ -87,7 +95,7 @@
 				{%- for look in project.looks %}
 				<figure class="look">
 					{%- if look.display %}
-					{% sanityImage look.display %}
+					{{ look.display | sanityImage | safe }}
 					{%- endif -%}
 					{%- if look.title or look.description %}
 					<figcaption>

@@ -38,15 +38,22 @@ module.exports = async function () {
 						(isPublic == true && defined(address.current)) => {
 							title,
 							"address": address.current,
-							"image0": lookbook[0].asset -> {
-								url,
-								"height": metadata.dimensions.height,
-								"width": metadata.dimensions.width,
-								"extension": metadata.extension,
-								"lqip": metadata.lqip,
-								"palette": metadata.palette.dominant {
-									background,
-									foreground,
+							lookbook[0]._type == "image" => {
+								"image0": lookbook[0].asset -> {
+									url,
+									"height": metadata.dimensions.height,
+									"width": metadata.dimensions.width,
+									"extension": metadata.extension,
+									"lqip": metadata.lqip,
+									"palette": metadata.palette.dominant {
+										background,
+										foreground,
+									},
+								},
+							},
+							lookbook[0]._type == "video" => {
+								"video0": lookbook[0] {
+									url,
 								},
 							},
 							"looks": array::compact(looks[]->display.asset -> {
@@ -63,7 +70,30 @@ module.exports = async function () {
 					"projects": *[_type == "project" && references(^.categories[]._ref) && isPublic == true && defined(address.current)] {
 						_id in array::compact(^.^.contents[].projects[]._ref) => {
 							"isRepeated": true,
-							"image1": lookbook[1].asset -> {
+							lookbook[1]._type == "image" => {
+								"image1": lookbook[1].asset -> {
+									url,
+									"height": metadata.dimensions.height,
+									"width": metadata.dimensions.width,
+									"extension": metadata.extension,
+									"lqip": metadata.lqip,
+									"palette": metadata.palette.dominant {
+										background,
+										foreground,
+									},
+								},
+							},
+							lookbook[1]._type == "video" => {
+								"video1": lookbook[1] {
+									url,
+								},
+							},
+						},
+						title,
+						year,
+						"address": address.current,
+						lookbook[0]._type == "image" => {
+							"image0": lookbook[0].asset -> {
 								url,
 								"height": metadata.dimensions.height,
 								"width": metadata.dimensions.width,
@@ -75,18 +105,9 @@ module.exports = async function () {
 								},
 							},
 						},
-						title,
-						year,
-						"address": address.current,
-						"image0": lookbook[0].asset -> {
-							url,
-							"height": metadata.dimensions.height,
-							"width": metadata.dimensions.width,
-							"extension": metadata.extension,
-							"lqip": metadata.lqip,
-							"palette": metadata.palette.dominant {
-								background,
-								foreground,
+						lookbook[0]._type == "video" => {
+							"video0": lookbook[0] {
+								url,
 							},
 						},
 						"looks": array::compact(looks[]->display.asset -> {
