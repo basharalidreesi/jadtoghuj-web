@@ -2,9 +2,28 @@ const toHTML = require("@portabletext/to-html").toHTML
 const { uriLooksSafe } = require("@portabletext/to-html")
 
 module.exports = function(eleventyConfig) {
-	
-	eleventyConfig.addJavaScriptFunction("sanityImage", function(value) {
-		return `<img src="${ value?.url }" alt="" loading="lazy" width="${ value?.width }" height="${ value?.height }" />`
+
+	eleventyConfig.addJavaScriptFunction("sanityImage", function(value, params = {}) {
+		const {
+			element = "div",
+			classNames,
+			backgroundSize = "100% 100%",
+			backgroundPosition = "center",
+			attributes = {},
+		} = params
+		const _class = `class="${classNames?.filter(Boolean)?.join(" ")}"`
+		const style = {
+			"background-image": `url(${value?.lqip})`,
+			"background-repeat": "no-repeat",
+			"background-size": backgroundSize,
+			"background-position": backgroundPosition,
+		}
+		const options = [classNames ? _class : "", value?.hasAlpha ? "" : `style="${eleventyConfig.getFilter("formatCss")(style)}"`, attributes ? eleventyConfig.getFilter("formatAttributes")(attributes) : ""]
+		return (`
+			<${element} ${options?.filter(Boolean)?.join(" ")}>
+				<img src="${ value?.url }" alt="" loading="lazy" width="${ value?.width }" height="${ value?.height }" />
+			</${element}>
+		`)
 	})
 
 	eleventyConfig.addJavaScriptFunction("createSvgFromUrl", async function(value) {
@@ -59,6 +78,13 @@ module.exports = function(eleventyConfig) {
 		if (!value) { return }
 		return Object.entries(value)?.map(rule => {
 			return rule[0] && rule[1] ? `${rule[0]}: ${rule[1]};` : ""
+		})?.filter(Boolean)?.join(" ")
+	})
+
+	eleventyConfig.addJavaScriptFunction("formatAttributes", function(value) {
+		if (!value) { return }
+		return Object.entries(value)?.map(attribute => {
+			return attribute[0] && attribute[1] ? `${attribute[0]}="${attribute[1]}"` : ""
 		})?.filter(Boolean)?.join(" ")
 	})
 
@@ -117,7 +143,7 @@ module.exports = function(eleventyConfig) {
 	})
 
 	eleventyConfig.addPassthroughCopy({
-		"_assets": "assets"
+		"_fonts": "assets/fonts"
 	})
 	eleventyConfig.addPassthroughCopy({
 		"_static": "/"
@@ -132,7 +158,7 @@ module.exports = function(eleventyConfig) {
 			includes: "_includes",
 			layouts: "_layouts",
 			data: "_data",
-			output: "_site",
+			output: "_dist",
 		},
 	}
 

@@ -34,7 +34,7 @@ const blocks = async (data, eleventy) => {
 				${await blockSwitch(block, eleventy, data)}
 			</div>
 		`)
-	})).then(result => result.join("").replace(/^\t\t\t/gm, "\t".repeat(5)))
+	})).then(result => result.join("").replace(/^\t\t\t/mg, "\t".repeat(5)))
 }
 
 const blockSwitch = async (block, eleventy, data) => {
@@ -54,7 +54,10 @@ const textBlock = (block, eleventy) => {
 }
 
 const imageBlock = (block, eleventy) => {
-	return eleventy.sanityImage(block?.image)
+	return eleventy.sanityImage(block?.image, {
+		element: "picture",
+		classNames: ["image"],
+	}).replace(/^\t\t\t/mg, "\t".repeat(4))
 }
 
 const lookBlock = (block) => {
@@ -73,23 +76,21 @@ const projectBlock = async (block, eleventy, data) => {
 					${ project?.title }
 				</span>
 			</a>
-		`).replace(/^\t\t\t/gm, "\t".repeat(4))
+		`).replace(/^\t\t\t/mg, "\t".repeat(4))
 	}
 	const projectImage = (project) => {
 		if (!project.image0) { return "" }
-		const _class = `class="project-image"`
-		const style = {
-			"background-image": `url(${project?.image1?.lqip || project?.image0?.lqip})`,
-			"background-repeat": "no-repeat",
-			"background-size": "auto 30rem",
-			"background-position": "center",
-		}
-		const options = [_class, `style="${eleventy.formatCss(style)}"`]
-		return (`
-			<div ${options?.filter(Boolean)?.join(" ")}>
-				${ project?.isRepeated && project?.image1 ? eleventy.sanityImage(project?.image1) : eleventy.sanityImage(project?.image0) }
-			</div>
-		`).replace(/^\t\t\t/gm, "\t".repeat(4))
+		return project?.isRepeated && project?.image1
+			? eleventy.sanityImage(project?.image1, {
+				element: "picture",
+				classNames: ["project-image"],
+				backgroundSize: "auto 30rem",
+			}).replace(/^\t\t\t/mg, "\t".repeat(4))
+			: eleventy.sanityImage(project?.image0, {
+				element: "picture",
+				classNames: ["project-image"],
+				backgroundSize: "auto 30rem",
+			}).replace(/^\t\t\t/mg, "\t".repeat(4))
 	}
 	const projectVideo = async (project) => {
 		if (!project.video0) { return "" }
@@ -99,7 +100,7 @@ const projectBlock = async (block, eleventy, data) => {
 			<div ${options?.filter(Boolean).join(" ")}>
 				${ project?.isRepeated && project?.video1 ? await eleventy.createVideoFromUrl(eleventy.parseUrl(project?.video1?.url)) : await eleventy.createVideoFromUrl(eleventy.parseUrl(project?.video0?.url)) }
 			</div>
-		`).replace(/^\t\t\t/gm, "\t".repeat(4))
+		`).replace(/^\t\t\t/mg, "\t".repeat(4))
 	}
 	const projectLooks = (project) => {
 		if (!project?.looks || project?.looks?.length <= 1) { return "" }
@@ -109,16 +110,13 @@ const projectBlock = async (block, eleventy, data) => {
 		return (`
 			<div ${options?.filter(Boolean)?.join(" ")}>
 				${project?.looks?.map(look => {
-					const _class = `class="project-look"`
-					const options = [_class]
-					return (`
-						<div ${options?.filter(Boolean)?.join(" ")}>
-							${eleventy.sanityImage(look)}
-						</div>
-					`)
-				}).join("").replace(/^\t\t\t/gm, "\t".repeat(1))}
+					return eleventy.sanityImage(look, {
+						element: "picture",
+						classNames: ["project-look"],
+					})
+				}).join("").replace(/^\t\t\t/mg, "\t".repeat(4))}
 			</div>
-		`).replace(/^\t\t\t/gm, "\t".repeat(4))
+		`).replace(/^\t\t\t/mg, "\t".repeat(4))
 	}
 	return await Promise.all(block?.projects?.map(async project => {
 		const _class = `class="project"`
@@ -136,8 +134,8 @@ const projectBlock = async (block, eleventy, data) => {
 				${await projectVideo(project)}
 				${projectLooks(project)}
 			</article>
-		`)
-	})).then(result => result.join("").replace(/^\t\t\t/gm, "\t".repeat(4)))
+		`).replace(/^\t\t\t/mg, "\t".repeat(4))
+	})).then(result => result.join(""))
 }
 
 const categoryBlock = async (block, eleventy, data) => {

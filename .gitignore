@@ -4,10 +4,13 @@
 /node_modules
 
 # Compiled website
-/_site
+/_dist
 
 # Eleventy Image cache
 /.cache
+
+# Environment variables
+.env
 
 # .DS_Store
 .DS_Store

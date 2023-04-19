@@ -28,7 +28,7 @@ module.exports = async function () {
 						url,
 						"height": metadata.dimensions.height,
 						"width": metadata.dimensions.width,
-						"extension": metadata.extension,
+						"hasAlpha": metadata.hasAlpha,
 						"lqip": metadata.lqip,
 					},
 				},
@@ -43,7 +43,7 @@ module.exports = async function () {
 									url,
 									"height": metadata.dimensions.height,
 									"width": metadata.dimensions.width,
-									"extension": metadata.extension,
+									"hasAlpha": metadata.hasAlpha,
 									"lqip": metadata.lqip,
 									"palette": metadata.palette.dominant {
 										background,
@@ -60,7 +60,7 @@ module.exports = async function () {
 								url,
 								"height": metadata.dimensions.height,
 								"width": metadata.dimensions.width,
-								"extension": metadata.extension,
+								"hasAlpha": metadata.hasAlpha,
 								"lqip": metadata.lqip,
 							}),
 						}
@@ -75,7 +75,7 @@ module.exports = async function () {
 									url,
 									"height": metadata.dimensions.height,
 									"width": metadata.dimensions.width,
-									"extension": metadata.extension,
+									"hasAlpha": metadata.hasAlpha,
 									"lqip": metadata.lqip,
 									"palette": metadata.palette.dominant {
 										background,
@@ -97,7 +97,7 @@ module.exports = async function () {
 								url,
 								"height": metadata.dimensions.height,
 								"width": metadata.dimensions.width,
-								"extension": metadata.extension,
+								"hasAlpha": metadata.hasAlpha,
 								"lqip": metadata.lqip,
 								"palette": metadata.palette.dominant {
 									background,
@@ -114,7 +114,7 @@ module.exports = async function () {
 							url,
 							"height": metadata.dimensions.height,
 							"width": metadata.dimensions.width,
-							"extension": metadata.extension,
+							"hasAlpha": metadata.hasAlpha,
 							"lqip": metadata.lqip,
 						}),
 					} | order(year desc, lower(title) asc),

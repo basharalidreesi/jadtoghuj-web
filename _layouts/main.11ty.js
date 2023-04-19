@@ -10,7 +10,8 @@ class Main {
 				<meta name="keywords" content="${keywords(data)}">
 				<meta name="theme-color" content="${themeColour(data)}">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0 viewport-fit=cover">
-				<meta name="robots" content="max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+				<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+				<meta name="generator" content="eleventy">
 				<link rel="canonical" href="${canonical(data)}">
 				<link rel="preload" href="${baseUrl(data)}/assets/css/main.css" as="style">
 				<link rel="preload" href="${baseUrl(data)}/assets/css/fonts.css" as="style">
@@ -18,10 +19,11 @@ class Main {
 				<link rel="stylesheet" href="${baseUrl(data)}/assets/css/fonts.css" />
 				<meta property="og:type" content="website">
 				<meta property="og:title" content="${title(data)}">
+				<meta property="og:site_name" content="${siteName(data)}">
 				<meta property="og:description" content="${description(data, eleventy)}">
 				<meta property="og:url" content="${canonical(data)}">
 				<!-- <meta property="og:image" content=""> -->
-				<!-- <meta property="twitter:card" content="summary_large_image"> -->
+				<meta property="twitter:card" content="summary_large_image">
 				<meta property="twitter:title" content="${title(data)}">
 				<meta property="twitter:description" content="${description(data, eleventy)}">
 				<meta property="twitter:url" content="${canonical(data)}">
@@ -49,11 +51,12 @@ class Main {
 					${content(data)}
 				</main>
 				<footer class="footer">
+					<!-- last built ${new Date()} -->
 					${footer(data, eleventy)}
 				</footer>
 			</body>
 			</html>
-		`).replace(/^\t\t\t/gm, "").replace(/^\s*\n/gm, "")
+		`).replace(/^\t\t\t/mg, "\t".repeat(0)).replace(/^\s*\n/mg, "")
 	}
 }
 
@@ -88,6 +91,10 @@ const canonical = (data) => {
 
 const baseUrl = (data) => {
 	return data.settings?.baseUrl || ""
+}
+
+const siteName = (data) => {
+	return data.settings?.title || ""
 }
 
 const analytics = (data) => {
@@ -160,12 +167,12 @@ const nav = (data, eleventy) => {
 					${title}
 				</span>
 			</a>
-		`).replace(/^\t\t\t/gm, "\t".repeat(4))
+		`).replace(/^\t\t\t/mg, "\t".repeat(4))
 	}
 	return data.settings?.navigation?.groups?.map((group, index) => {
 		const isTruncated = group.truncation?.isTruncated && group.pages?.length > group.truncation?.limit
 		const limit = isTruncated ? group.truncation?.limit : group.pages?.length
-		return `
+		return (`
 			<div class="nav-group">
 				${group.pages?.slice(0, limit)?.map(page => { return navLink(page, false) })?.join("")}
 				${isTruncated
@@ -178,14 +185,14 @@ const nav = (data, eleventy) => {
 								${eleventy.strip(navExpand)}
 							</button>
 							<div id="group-${index}-menu" class="nav-subgroup" aria-role="menu" aria-labelledby="group-${index}-button">
-								${group.pages?.slice(limit, group.pages?.length)?.map(page => { return navLink(page, true) })?.join("").replace(/^\t\t/gm, "\t".repeat(6))}
+								${group.pages?.slice(limit, group.pages?.length)?.map(page => { return navLink(page, true) })?.join("").replace(/^\t\t\t/mg, "\t".repeat(7))}
 							</div>
 						</div>
-					`).replace(/^\t\t/gm, "")
+					`).replace(/^\t\t\t/mg, "\t".repeat(1))
 					: ""}
 			</div>
-		`
-	})?.join("").replace(/^\t\t\t/gm, "\t".repeat(6))
+		`).replace(/^\t\t\t/mg, "\t".repeat(6))
+	})?.join("")
 }
 
 const content = (data) => {

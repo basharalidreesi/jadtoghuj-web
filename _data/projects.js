@@ -47,7 +47,7 @@ module.exports = async function () {
 				url,
 				"height": metadata.dimensions.height,
 				"width": metadata.dimensions.width,
-				"extension": metadata.extension,
+				"hasAlpha": metadata.hasAlpha,
 				"lqip": metadata.lqip,
 			},
 			description[] {
@@ -71,7 +71,7 @@ module.exports = async function () {
 					url,
 					"height": metadata.dimensions.height,
 					"width": metadata.dimensions.width,
-					"extension": metadata.extension,
+					"hasAlpha": metadata.hasAlpha,
 					"lqip": metadata.lqip,
 				},
 			},

@@ -48,19 +48,13 @@ const lookbookSwitch = async (entry, eleventy) => {
 }
 
 const imageEntry = (entry, eleventy) => {
-	const _class = `class="lookbook-entry"`
-	const style = {
-		"background-image": `url(${entry?.asset?.lqip})`,
-		"background-repeat": "no-repeat",
-		"background-size": "100% 100%",
-	}
-	const dataType = `data-type="image"`
-	const options = [_class, `style="${eleventy.formatCss(style)}"`, dataType]
-	return (`
-		<div ${options?.filter(Boolean)?.join(" ")}>
-			${eleventy.sanityImage(entry.asset)}
-		</div>
-	`).replace(/^\t\t/gm, "\t".repeat(6))
+	return eleventy.sanityImage(entry.asset, {
+		element: "picture",
+		classNames: ["lookbook-entry"],
+		attributes: {
+			"data-type": "image",
+		},
+	}).replace(/^\t\t\t/mg, "\t".repeat(6))
 }
 
 const videoEntry = async (entry, eleventy) => {
@@ -73,7 +67,7 @@ const videoEntry = async (entry, eleventy) => {
 				${await eleventy.createVideoFromUrl(eleventy.parseUrl(entry?.url))}
 			</div>
 		</div>
-	`).replace(/^\t\t/gm, "\t".repeat(6))
+	`).replace(/^\t\t\t/mg, "\t".repeat(6))
 }
 
 const lookbookControls = (data) => {
@@ -93,7 +87,7 @@ const lookbookControls = (data) => {
 				</svg>
 			</button>
 		</div>
-	`).replace(/^\t\t/gm, "\t".repeat(6))
+	`).replace(/^\t\t/mg, "\t".repeat(6))
 }
 
 const projectInfo = (data, eleventy) => {
@@ -117,7 +111,7 @@ const projectTitle = (data) => {
 		<header ${options?.filter(Boolean)?.join(" ")}>
 			<span>${data.project?.title}</span>
 		</header>
-	`).replace(/^\t\t/gm, "\t".repeat(6))
+	`).replace(/^\t\t/mg, "\t".repeat(6))
 }
 
 const projectDescription = (data, eleventy) => {
@@ -128,7 +122,7 @@ const projectDescription = (data, eleventy) => {
 		<div ${options?.filter(Boolean)?.join(" ")}>
 			${eleventy.portableTextToHtml(data.project?.description)}
 		</div>
-	`).replace(/^\t\t/gm, "\t".repeat(6))
+	`).replace(/^\t\t/mg, "\t".repeat(6))
 }
 
 const projectStats = (data) => {
@@ -139,7 +133,7 @@ const projectStats = (data) => {
 		<div ${options?.filter(Boolean)?.join(" ")}>
 			<p class="text">${[data.project?.year, data.project?.categories?.filter(Boolean)?.join(", ")].filter(Boolean)?.join(" • ")}</p>
 		</div>
-	`).replace(/^\t\t/gm, "\t".repeat(6))
+	`).replace(/^\t\t/mg, "\t".repeat(6))
 }
 
 const projectContributions = (data) => {
@@ -147,34 +141,32 @@ const projectContributions = (data) => {
 	const _class = `class="project-contributions"`
 	const options = [_class]
 	return (`
-		<div ${options?.filter(Boolean)?.join(" ")}>
-			<dl>
-				${data.project?.contributors?.map(contribution => {
-					return (`
-						<dt class="text">
-							${contribution?.role}
-						</dt>
-						${contribution?.persons?.map(person => {
-							if (person?.url) {
-								return (`
-									<dd class="text">
-										<a class="link" href="${person?.url}" rel="noopener" target="_blank">
-											${person?.name}
-										</a>
-									</dd>
-								`).replace(/^\t\t\t\t/gm, "\t".repeat(1))
-							}
+		<dl ${options?.filter(Boolean)?.join(" ")}>
+			${data.project?.contributors?.map(contribution => {
+				return (`
+					<dt class="text">
+						${contribution?.role}
+					</dt>
+					${contribution?.persons?.map(person => {
+						if (person?.url) {
 							return (`
 								<dd class="text">
-									${person?.name}
+									<a class="link" href="${person?.url}" rel="noopener" target="_blank">
+										${person?.name}
+									</a>
 								</dd>
-							`).replace(/^\t\t\t/gm, "\t".repeat(1))
-						}).join("")}
-					`).replace(/^\t\t\t/gm, "\t".repeat(1))
-				}).join("")}
-			</dl>
-		</div>
-	`).replace(/^\t\t/gm, "\t".repeat(6))
+							`).replace(/^\t\t\t/mg, "\t".repeat(0))
+						}
+						return (`
+							<dd class="text">
+								${person?.name}
+							</dd>
+						`).replace(/^\t\t\t/mg, "\t".repeat(1))
+					}).join("")}
+				`).replace(/^\t\t\t/mg, "\t".repeat(1))
+			}).join("")}
+		</dl>
+	`).replace(/^\t\t/mg, "\t".repeat(6))
 }
 
 const projectLooks = (data, eleventy) => {
@@ -184,30 +176,57 @@ const projectLooks = (data, eleventy) => {
 	return (`
 		<div ${options?.filter(Boolean)?.join(" ")}>
 			${data.project?.looks?.map(look => {
-				const _class = `class="project-look"`
-				const options = [_class]
-				return (`
-					<figure ${options?.filter(Boolean)?.join(" ")}>
-						${look?.display ? eleventy.sanityImage(look?.display) : ""}
-						${look?.title || look?.description ? lookDescription(look, eleventy) : ""}
-					</figure>
-				`).replace(/^\t\t/gm, "")
+				return projectLook(look, eleventy)
 			}).join("")}
 		</div>
-	`).replace(/^\t\t/gm, "\t".repeat(6))
+	`).replace(/^\t\t/mg, "\t".repeat(6))
+}
+
+const projectLook = (look, eleventy) => {
+	const _class = `class="project-look"`
+	const options = [_class]
+	return (`
+		<figure ${options?.filter(Boolean)?.join(" ")}>
+			${lookImage(look, eleventy)}
+			${lookInfo(look, eleventy)}
+		</figure>
+	`).replace(/^\t\t/mg, "\t".repeat(3))
+}
+
+const lookImage = (look, eleventy) => {
+	if (!look?.display) { return "" }
+	return eleventy.sanityImage(look?.display, {
+		element: "picture",
+		classNames: ["look-image"],
+	})
+}
+
+const lookInfo = (look, eleventy) => {
+	if (!look?.description) { return "" }
+	var element = "figcaption"
+	if (!look?.display) { element = "div" }
+	const _class = `class="look-description"`
+	const options = [_class]
+	return (`
+		<${element} ${options?.filter(Boolean)?.join(" ")}>
+			${lookTitle(look)}
+			${lookDescription(look, eleventy)}
+		</${element}>
+	`).replace(/^\t\t/mg, "\t".repeat(3))
+}
+
+const lookTitle = (look) => {
+	if (!look?.title) { return "" }
+	return (`
+		<header>
+			${look.title}
+		</header>
+	`).replace(/^\t\t/mg, "\t".repeat(3))
 }
 
 const lookDescription = (look, eleventy) => {
-	return (`
-		<figcaption>
-			${look?.title ? (`
-				<header>
-					${look.title}
-				</header>
-			`).replace(/^\t\t\t\t/gm, "\t".repeat(3)) : ""}
-			${look?.description ? eleventy.portableTextToHtml(look?.description) : ""}
-		</figcaption>
-	`).replace(/^\t\t/gm, "\t".repeat(6))
+	if (!look?.description) { return "" }
+	return eleventy.portableTextToHtml(look?.description)
 }
 
 module.exports = Project
