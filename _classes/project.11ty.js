@@ -1,4 +1,4 @@
-class Projects {
+class Project {
 	data() {
 		return {
 			pagination: {
@@ -18,31 +18,31 @@ class Projects {
 			permalink: data => `${data.settings.baseUrl || ""}${data.settings.projectPath}/${data.project.address}/`,
 		}
 	}
-	render(data) {
+	async render(data) {
 		const eleventy = this
 		return (`
-			${lookbook(data, eleventy)}
+			${await lookbook(data, eleventy)}
 			${projectInfo(data, eleventy)}
 		`)
 	}
 }
 
-const lookbook = (data, eleventy) => {
+const lookbook = async (data, eleventy) => {
 	const _class = `class="project-lookbook"`
 	const dataSize = `data-size="${data.project?.lookbook?.length}"`
 	const options = [_class, dataSize]
 	return (`
 		<div ${options?.filter(Boolean).join(" ")}>
-			${data.project?.lookbook?.map(entry => lookbookSwitch(entry, eleventy, data)).join("")}
+			${await Promise.all(data.project?.lookbook?.map(async entry => await lookbookSwitch(entry, eleventy))).then(result => result.join(""))}
 			${lookbookControls(data)}
 		</div>
 	`)
 }
 
-const lookbookSwitch = (entry, eleventy, data) => {
+const lookbookSwitch = async (entry, eleventy) => {
 	switch(entry?.type) {
 		case "image": return imageEntry(entry, eleventy)
-		case "video": return videoEntry(entry, eleventy)
+		case "video": return await videoEntry(entry, eleventy)
 		default: return ""
 	}
 }
@@ -60,20 +60,20 @@ const imageEntry = (entry, eleventy) => {
 		<div ${options?.filter(Boolean)?.join(" ")}>
 			${eleventy.sanityImage(entry.asset)}
 		</div>
-	`)
+	`).replace(/^\t\t/gm, "\t".repeat(6))
 }
 
-const videoEntry = (entry, eleventy) => {
+const videoEntry = async (entry, eleventy) => {
 	const _class = `class="lookbook-entry"`
 	const dataType = `data-type="video"`
 	const options = [_class, dataType]
 	return (`
 		<div ${options?.filter(Boolean)?.join(" ")}>
 			<div>
-				${eleventy.createVideoFromUrl(eleventy.parseUrl(entry?.url))}
+				${await eleventy.createVideoFromUrl(eleventy.parseUrl(entry?.url))}
 			</div>
 		</div>
-	`)
+	`).replace(/^\t\t/gm, "\t".repeat(6))
 }
 
 const lookbookControls = (data) => {
@@ -93,7 +93,7 @@ const lookbookControls = (data) => {
 				</svg>
 			</button>
 		</div>
-	`)
+	`).replace(/^\t\t/gm, "\t".repeat(6))
 }
 
 const projectInfo = (data, eleventy) => {
@@ -117,7 +117,7 @@ const projectTitle = (data) => {
 		<header ${options?.filter(Boolean)?.join(" ")}>
 			<span>${data.project?.title}</span>
 		</header>
-	`)
+	`).replace(/^\t\t/gm, "\t".repeat(6))
 }
 
 const projectDescription = (data, eleventy) => {
@@ -128,7 +128,7 @@ const projectDescription = (data, eleventy) => {
 		<div ${options?.filter(Boolean)?.join(" ")}>
 			${eleventy.portableTextToHtml(data.project?.description)}
 		</div>
-	`)
+	`).replace(/^\t\t/gm, "\t".repeat(6))
 }
 
 const projectStats = (data) => {
@@ -139,7 +139,7 @@ const projectStats = (data) => {
 		<div ${options?.filter(Boolean)?.join(" ")}>
 			<p class="text">${[data.project?.year, data.project?.categories?.filter(Boolean)?.join(", ")].filter(Boolean)?.join(" • ")}</p>
 		</div>
-	`)
+	`).replace(/^\t\t/gm, "\t".repeat(6))
 }
 
 const projectContributions = (data) => {
@@ -162,19 +162,19 @@ const projectContributions = (data) => {
 											${person?.name}
 										</a>
 									</dd>
-								`)
+								`).replace(/^\t\t\t\t/gm, "\t".repeat(1))
 							}
 							return (`
 								<dd class="text">
 									${person?.name}
 								</dd>
-							`)
+							`).replace(/^\t\t\t/gm, "\t".repeat(1))
 						}).join("")}
-					`)
+					`).replace(/^\t\t\t/gm, "\t".repeat(1))
 				}).join("")}
 			</dl>
 		</div>
-	`)
+	`).replace(/^\t\t/gm, "\t".repeat(6))
 }
 
 const projectLooks = (data, eleventy) => {
@@ -191,10 +191,10 @@ const projectLooks = (data, eleventy) => {
 						${look?.display ? eleventy.sanityImage(look?.display) : ""}
 						${look?.title || look?.description ? lookDescription(look, eleventy) : ""}
 					</figure>
-				`)
-			})}
+				`).replace(/^\t\t/gm, "")
+			}).join("")}
 		</div>
-	`)
+	`).replace(/^\t\t/gm, "\t".repeat(6))
 }
 
 const lookDescription = (look, eleventy) => {
@@ -204,10 +204,10 @@ const lookDescription = (look, eleventy) => {
 				<header>
 					${look.title}
 				</header>
-			`) : ""}
+			`).replace(/^\t\t\t\t/gm, "\t".repeat(3)) : ""}
 			${look?.description ? eleventy.portableTextToHtml(look?.description) : ""}
 		</figcaption>
-	`)
+	`).replace(/^\t\t/gm, "\t".repeat(6))
 }
 
-module.exports = Projects
+module.exports = Project

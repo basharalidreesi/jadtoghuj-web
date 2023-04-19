@@ -1,4 +1,4 @@
-class Pages {
+class Page {
 	data() {
 		return {
 			pagination: {
@@ -18,32 +18,32 @@ class Pages {
 			permalink: data => `${data.settings?.baseUrl || ""}${data.page?.address}/`,
 		}
 	}
-	render(data) {
+	async render(data) {
 		const eleventy = this
-		return blocks(data, eleventy)
+		return await blocks(data, eleventy)
 	}
 }
 
-const blocks = (data, eleventy) => {
-	return data.page?.contents?.map(block => {
+const blocks = async (data, eleventy) => {
+	return await Promise.all(data.page?.contents?.map(async block => {
 		const _class = `class="${eleventy.camelCaseToKebabCase(block?.type)}"`
 		const dataSize = block?.type === "projectBlock" || block?.type === "categoryBlock" ? `data-size="${block?.projects?.length || block?.looks?.length}"` : ""
 		const options = [_class, dataSize]
 		return (`
 			<div ${options?.filter(Boolean)?.join(" ")}>
-				${blockSwitch(block, eleventy, data)}
+				${await blockSwitch(block, eleventy, data)}
 			</div>
 		`)
-	})?.join("").replace(/^\t\t\t/gm, "\t".repeat(4))
+	})).then(result => result.join("").replace(/^\t\t\t/gm, "\t".repeat(5)))
 }
 
-const blockSwitch = (block, eleventy, data) => {
+const blockSwitch = async (block, eleventy, data) => {
 	switch(block?.type) {
 		case "textBlock": return textBlock(block, eleventy)
 		case "imageBlock": return imageBlock(block, eleventy)
 		case "lookBlock": return lookBlock(block)
-		case "projectBlock": return projectBlock(block, eleventy, data)
-		case "categoryBlock": return categoryBlock(block, eleventy, data)
+		case "projectBlock": return await projectBlock(block, eleventy, data)
+		case "categoryBlock": return await categoryBlock(block, eleventy, data)
 		case "campaignBlock": return campaignBlock(block)
 		default: return ""
 	}
@@ -61,7 +61,7 @@ const lookBlock = (block) => {
 	return `look`
 }
 
-const projectBlock = (block, eleventy, data) => {
+const projectBlock = async (block, eleventy, data) => {
 	const projectLink = (project) => {
 		if (!project?.image0 && !project?.video0 ) { return "" }
 		const _class = `class="project-link"`
@@ -91,13 +91,13 @@ const projectBlock = (block, eleventy, data) => {
 			</div>
 		`).replace(/^\t\t\t/gm, "\t".repeat(4))
 	}
-	const projectVideo = (project) => {
+	const projectVideo = async (project) => {
 		if (!project.video0) { return "" }
 		const _class = `class="project-video"`
 		const options = [_class]
 		return (`
 			<div ${options?.filter(Boolean).join(" ")}>
-				${ project?.isRepeated && project?.video1 ? eleventy.createVideoFromUrl(eleventy.parseUrl(project?.video1?.url)) : eleventy.createVideoFromUrl(eleventy.parseUrl(project?.video0?.url)) }
+				${ project?.isRepeated && project?.video1 ? await eleventy.createVideoFromUrl(eleventy.parseUrl(project?.video1?.url)) : await eleventy.createVideoFromUrl(eleventy.parseUrl(project?.video0?.url)) }
 			</div>
 		`).replace(/^\t\t\t/gm, "\t".repeat(4))
 	}
@@ -120,7 +120,7 @@ const projectBlock = (block, eleventy, data) => {
 			</div>
 		`).replace(/^\t\t\t/gm, "\t".repeat(4))
 	}
-	return block?.projects?.map(project => {
+	return await Promise.all(block?.projects?.map(async project => {
 		const _class = `class="project"`
 		const dataIsRepeated = project?.isRepeated ? `data-is-repeated="true"` : ""
 		const dataContents = `data-contents="${[project?.image0 ? "image" : "", project?.video0 ? "video" : "", project?.looks?.length > 1 ? "looks" : "", ]?.filter(Boolean)?.join(" ")}"`
@@ -133,19 +133,19 @@ const projectBlock = (block, eleventy, data) => {
 			<article ${options?.filter(Boolean)?.join(" ")}>
 				${projectLink(project)}
 				${projectImage(project)}
-				${projectVideo(project)}
+				${await projectVideo(project)}
 				${projectLooks(project)}
 			</article>
 		`)
-	})?.join("").replace(/^\t\t\t/gm, "\t".repeat(5))
+	})).then(result => result.join("").replace(/^\t\t\t/gm, "\t".repeat(4)))
 }
 
-const categoryBlock = (block, eleventy, data) => {
-	return projectBlock(block, eleventy, data)
+const categoryBlock = async (block, eleventy, data) => {
+	return await projectBlock(block, eleventy, data)
 }
 
 const campaignBlock = (block) => {
 	return `campaign`
 }
 
-module.exports = Pages
+module.exports = Page

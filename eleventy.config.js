@@ -3,18 +3,18 @@ const { uriLooksSafe } = require("@portabletext/to-html")
 
 module.exports = function(eleventyConfig) {
 	
-	eleventyConfig.addFilter("sanityImage", function(value) {
+	eleventyConfig.addJavaScriptFunction("sanityImage", function(value) {
 		return `<img src="${ value?.url }" alt="" loading="lazy" width="${ value?.width }" height="${ value?.height }" />`
 	})
 
-	eleventyConfig.addAsyncFilter("createSvgFromUrl", function(value) {
+	eleventyConfig.addJavaScriptFunction("createSvgFromUrl", async function(value) {
 		if (!value) { return }
-		return fetch(value).then(async function (response) {
+		return await fetch(value).then(async function (response) {
 			return response.text()
 		})
 	})
 
-	eleventyConfig.addFilter("parseUrl", function(value) {
+	eleventyConfig.addJavaScriptFunction("parseUrl", function(value) {
 		const hostname = new URL(value).hostname.replace("www.", "")
 		return {
 			url: value,
@@ -22,11 +22,11 @@ module.exports = function(eleventyConfig) {
 		}
 	})
 
-	eleventyConfig.addAsyncFilter("createVideoFromUrl", function(value) {
+	eleventyConfig.addJavaScriptFunction("createVideoFromUrl", async function(value) {
 		if (!value.url || !value.hostname) { return }
 		const url = encodeURIComponent(value.url)
 		if (value.hostname === "youtube.com" || value.hostname === "youtu.be") {
-			return fetch(`https://youtube.com/oembed?url=${url}&format=json`).then(async function (response) {
+			return await fetch(`https://youtube.com/oembed?url=${url}&format=json`).then(async function (response) {
 				return response.json().then(function (data) {
 					return data.html
 						? data.html.replace("youtube.com", "youtube-nocookie.com")
@@ -35,7 +35,7 @@ module.exports = function(eleventyConfig) {
 			})
 		}
 		if (value.hostname === "vimeo.com") {
-			return fetch(`https://vimeo.com/api/oembed.json?url=${url}`).then(async function (response) {
+			return await fetch(`https://vimeo.com/api/oembed.json?url=${url}`).then(async function (response) {
 				return response.json().then(function (data) {
 					return data.html
 						? data.html
@@ -45,24 +45,24 @@ module.exports = function(eleventyConfig) {
 		}
 	})
 
-	eleventyConfig.addFilter("strip", function(value) {
+	eleventyConfig.addJavaScriptFunction("strip", function(value) {
 		return value.replace(/\s+/g, " ").trim()
 	})
 
-	eleventyConfig.addFilter("camelCaseToKebabCase", function(value) {
+	eleventyConfig.addJavaScriptFunction("camelCaseToKebabCase", function(value) {
 		return value.replace(/([A-Z])/g, function($1) {
 			return "-"+$1.toLowerCase();
 		})
 	})
 
-	eleventyConfig.addFilter("formatCss", function(value) {
+	eleventyConfig.addJavaScriptFunction("formatCss", function(value) {
 		if (!value) { return }
 		return Object.entries(value)?.map(rule => {
 			return rule[0] && rule[1] ? `${rule[0]}: ${rule[1]};` : ""
 		})?.filter(Boolean)?.join(" ")
 	})
 
-	eleventyConfig.addFilter("portableTextToHtml", function(value) {
+	eleventyConfig.addJavaScriptFunction("portableTextToHtml", function(value) {
 		return toHTML(value, {
 			components: {
 				block: (props) => {
@@ -92,7 +92,7 @@ module.exports = function(eleventyConfig) {
 		})
 	})
 
-	eleventyConfig.addFilter("portableTextToPlainText", function(value) {
+	eleventyConfig.addJavaScriptFunction("portableTextToPlainText", function(value) {
 		if (value) {
 			return value
 				.map(block => {

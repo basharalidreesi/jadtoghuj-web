@@ -1,8 +1,9 @@
+TODO
 [] create look blocks
 [] create campaign blocks
 [] refine image blocks
 [] refine text blocks
-[] restrict lqip to only if not png
+[] restrict lqip to only if not transparent in sanityImage
 [] explore different logo possibilities
 [] make project title clickable in project view
 [] add seeking functionality to project view
@@ -10,10 +11,14 @@
 [] add links to project info in project view such as embedding instagram posts (think more about this)
 [] visibility change and idle time effects
 [] adding other types of embeds in addition to youtube and vimeo such as spotify, soundcloud, instagram, tiktok
-[] study chaning template language to 11ty js
 [] enable/disable tinting
 [] study having colour settings on the page level
 [] colour overrides for projects
 [] think about alternative design for nav subgroups
 [] refine sanityImage output
 [] social media previews
+[] deal with safari's weird grey boxes
+
+DONE
+[x] study changing template language to 11ty js
+[x] figure out how to resolve promises

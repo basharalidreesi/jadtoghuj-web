@@ -110,7 +110,7 @@ const bodyOptions = (data, eleventy) => {
 		"--colour-background-bottom": "var(--colour-dominant-background)",
 	}
 	const dataLayout = `data-layout="${data.page?.fileSlug}"`
-	const options = [data.page?.fileSlug === "projects" && data.project?.image0?.url ? `style="${eleventy.formatCss(style)}"` : "", dataLayout]
+	const options = [data.page?.fileSlug === "project" && data.project?.image0?.url ? `style="${eleventy.formatCss(style)}"` : "", dataLayout]
 	return options?.filter(Boolean)?.join(" ")
 }
 
