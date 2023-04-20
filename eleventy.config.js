@@ -4,24 +4,26 @@ const { uriLooksSafe } = require("@portabletext/to-html")
 module.exports = function(eleventyConfig) {
 
 	eleventyConfig.addJavaScriptFunction("sanityImage", function(value, params = {}) {
+		if (!value?.url) { return }
 		const {
 			element = "div",
-			classNames,
+			className,
+			classNames = [],
 			backgroundSize = "100% 100%",
 			backgroundPosition = "center",
 			attributes = {},
 		} = params
-		const _class = `class="${classNames?.filter(Boolean)?.join(" ")}"`
+		const _class = `class="${[className, ...classNames]?.filter(Boolean)?.join(" ")}"`
 		const style = {
-			"background-image": `url(${value?.lqip})`,
-			"background-repeat": "no-repeat",
-			"background-size": backgroundSize,
-			"background-position": backgroundPosition,
+			"background-image": value.lqip && value.isOpaque ? `url(${value.lqip})` : "",
+			"background-repeat": value.lqip && value.isOpaque ? "no-repeat" : "",
+			"background-size": value.lqip && value.isOpaque ? backgroundSize : "",
+			"background-position": value.lqip && value.isOpaque ? backgroundPosition : "",
 		}
-		const options = [classNames ? _class : "", value?.hasAlpha ? "" : `style="${eleventyConfig.getFilter("formatCss")(style)}"`, attributes ? eleventyConfig.getFilter("formatAttributes")(attributes) : ""]
+		const options = [(className || classNames?.filter(Boolean)) ? _class : "", value.lqip && value.isOpaque ? `style="${eleventyConfig.getFilter("formatCss")(style)}"` : "", attributes ? eleventyConfig.getFilter("formatAttributes")(attributes) : ""]
 		return (`
 			<${element} ${options?.filter(Boolean)?.join(" ")}>
-				<img src="${ value?.url }" alt="" loading="lazy" width="${ value?.width }" height="${ value?.height }" />
+				<img src="${ value.url }" alt="" loading="lazy" width="${ value.width }" height="${ value.height }" />
 			</${element}>
 		`)
 	})

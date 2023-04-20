@@ -4,6 +4,9 @@ module.exports = async function () {
 	const targetProjects = await client.fetch(`
 	array::compact(*[_type == "page" && website == "jadtoghuj.com" && defined(contents)] {
 		contents[] {
+			_type == "lookBlock" => {
+				"projects": project._ref
+			},
 			_type == "projectBlock" => {
 				"projects": projects[]._ref
 			},
@@ -33,7 +36,7 @@ module.exports = async function () {
 		year,
 		"address": address.current,
 		"categories": categories[]->title,
-		contributors[] {
+		"contributions": contributors[] {
 			role,
 			persons[] -> {
 				name,
@@ -47,8 +50,12 @@ module.exports = async function () {
 				url,
 				"height": metadata.dimensions.height,
 				"width": metadata.dimensions.width,
-				"hasAlpha": metadata.hasAlpha,
+				"isOpaque": metadata.isOpaque,
 				"lqip": metadata.lqip,
+				"palette": metadata.palette.dominant {
+					background,
+					foreground,
+				},
 			},
 			description[] {
 				_type == "block" => {
@@ -71,7 +78,7 @@ module.exports = async function () {
 					url,
 					"height": metadata.dimensions.height,
 					"width": metadata.dimensions.width,
-					"hasAlpha": metadata.hasAlpha,
+					"isOpaque": metadata.isOpaque,
 					"lqip": metadata.lqip,
 				},
 			},

@@ -28,11 +28,33 @@ module.exports = async function () {
 						url,
 						"height": metadata.dimensions.height,
 						"width": metadata.dimensions.width,
-						"hasAlpha": metadata.hasAlpha,
+						"isOpaque": metadata.isOpaque,
 						"lqip": metadata.lqip,
 					},
 				},
-				// _type == "lookBlock" => {},
+				_type == "lookBlock" => {
+					"projects": [project -> {
+						(isPublic == true && defined(address.current)) => {
+							title,
+							"address": address.current,
+							lookbook[0]._type == "image" => {
+								"image0": lookbook[0].asset -> {
+									"palette": metadata.palette.dominant {
+										background,
+										foreground,
+									},
+								},
+							},
+							"looks": array::compact(^.looks[]->display.asset -> {
+								url,
+								"height": metadata.dimensions.height,
+								"width": metadata.dimensions.width,
+								"isOpaque": metadata.isOpaque,
+								"lqip": metadata.lqip,
+							}),
+						},
+					}],
+				},
 				_type == "projectBlock" => {
 					"projects": projects[] -> {
 						(isPublic == true && defined(address.current)) => {
@@ -43,7 +65,7 @@ module.exports = async function () {
 									url,
 									"height": metadata.dimensions.height,
 									"width": metadata.dimensions.width,
-									"hasAlpha": metadata.hasAlpha,
+									"isOpaque": metadata.isOpaque,
 									"lqip": metadata.lqip,
 									"palette": metadata.palette.dominant {
 										background,
@@ -56,15 +78,18 @@ module.exports = async function () {
 									url,
 								},
 							},
-							"looks": array::compact(looks[]->display.asset -> {
-								url,
-								"height": metadata.dimensions.height,
-								"width": metadata.dimensions.width,
-								"hasAlpha": metadata.hasAlpha,
-								"lqip": metadata.lqip,
+							"looks": array::compact(looks[] -> {
+								_id in array::compact(^.^.^.contents[].looks[]._ref) => {
+									"isRepeated": true
+								},
+								"url": display.asset->url,
+								"height": display.asset->metadata.dimensions.height,
+								"width": display.asset->metadata.dimensions.width,
+								"isOpaque": display.asset->metadata.isOpaque,
+								"lqip": display.asset->metadata.lqip,
 							}),
-						}
-					}
+						},
+					},
 				},
 				_type == "categoryBlock" => {
 					"projects": *[_type == "project" && references(^.categories[]._ref) && isPublic == true && defined(address.current)] {
@@ -75,7 +100,7 @@ module.exports = async function () {
 									url,
 									"height": metadata.dimensions.height,
 									"width": metadata.dimensions.width,
-									"hasAlpha": metadata.hasAlpha,
+									"isOpaque": metadata.isOpaque,
 									"lqip": metadata.lqip,
 									"palette": metadata.palette.dominant {
 										background,
@@ -97,7 +122,7 @@ module.exports = async function () {
 								url,
 								"height": metadata.dimensions.height,
 								"width": metadata.dimensions.width,
-								"hasAlpha": metadata.hasAlpha,
+								"isOpaque": metadata.isOpaque,
 								"lqip": metadata.lqip,
 								"palette": metadata.palette.dominant {
 									background,
@@ -110,12 +135,15 @@ module.exports = async function () {
 								url,
 							},
 						},
-						"looks": array::compact(looks[]->display.asset -> {
-							url,
-							"height": metadata.dimensions.height,
-							"width": metadata.dimensions.width,
-							"hasAlpha": metadata.hasAlpha,
-							"lqip": metadata.lqip,
+						"looks": array::compact(looks[] -> {
+							_id in array::compact(^.^.^.contents[].looks[]._ref) => {
+								"isRepeated": true
+							},
+							"url": display.asset->url,
+							"height": display.asset->metadata.dimensions.height,
+							"width": display.asset->metadata.dimensions.width,
+							"isOpaque": display.asset->metadata.isOpaque,
+							"lqip": display.asset->metadata.lqip,
 						}),
 					} | order(year desc, lower(title) asc),
 				},

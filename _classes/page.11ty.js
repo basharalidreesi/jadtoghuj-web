@@ -26,24 +26,33 @@ class Page {
 
 const blocks = async (data, eleventy) => {
 	return await Promise.all(data.page?.contents?.map(async block => {
+		if (
+			(block?.type === "projectBlock" || block?.type === "categoryBlock")
+			&& block?.projects?.length === 1
+			&& !block?.projects[0]?.image0?.url
+			&& !block?.projects[0]?.video0?.url
+			&& block?.projects[0]?.looks?.filter(look => look?.url)?.length === block?.projects[0]?.looks?.filter(look => look?.isRepeated)?.length
+		) { return "" }
 		const _class = `class="${eleventy.camelCaseToKebabCase(block?.type)}"`
-		const dataSize = block?.type === "projectBlock" || block?.type === "categoryBlock" ? `data-size="${block?.projects?.length || block?.looks?.length}"` : ""
+		const dataSize = block?.type === "projectBlock" || block?.type === "categoryBlock"
+			? `data-size="${block?.projects?.length || block?.looks?.length}"`
+			: ""
 		const options = [_class, dataSize]
 		return (`
 			<div ${options?.filter(Boolean)?.join(" ")}>
-				${await blockSwitch(block, eleventy, data)}
+				${await blockSwitch(block, data, eleventy)}
 			</div>
 		`)
 	})).then(result => result.join("").replace(/^\t\t\t/mg, "\t".repeat(5)))
 }
 
-const blockSwitch = async (block, eleventy, data) => {
+const blockSwitch = async (block, data, eleventy) => {
 	switch(block?.type) {
 		case "textBlock": return textBlock(block, eleventy)
 		case "imageBlock": return imageBlock(block, eleventy)
-		case "lookBlock": return lookBlock(block)
-		case "projectBlock": return await projectBlock(block, eleventy, data)
-		case "categoryBlock": return await categoryBlock(block, eleventy, data)
+		case "lookBlock": return await lookBlock(block, data, eleventy)
+		case "projectBlock": return await projectBlock(block, data, eleventy)
+		case "categoryBlock": return await categoryBlock(block, data, eleventy)
 		case "campaignBlock": return campaignBlock(block)
 		default: return ""
 	}
@@ -56,15 +65,29 @@ const textBlock = (block, eleventy) => {
 const imageBlock = (block, eleventy) => {
 	return eleventy.sanityImage(block?.image, {
 		element: "picture",
-		classNames: ["image"],
+		className: "image",
 	}).replace(/^\t\t\t/mg, "\t".repeat(4))
 }
 
-const lookBlock = (block) => {
-	return `look`
+const lookBlock = async (block, data, eleventy) => {
+	return await renderProject(block, data, eleventy)
 }
 
-const projectBlock = async (block, eleventy, data) => {
+const projectBlock = async (block, data, eleventy) => {
+	return await renderProjects(block, data, eleventy)
+}
+
+const categoryBlock = async (block, data, eleventy) => {
+	return await renderProjects(block, data, eleventy)
+}
+
+const campaignBlock = (block) => {
+	return `campaign`
+}
+
+const renderProject = async (block, data, eleventy) => await renderProjects(block, data, eleventy)
+
+const renderProjects = async (block, data, eleventy) => {
 	const projectLink = (project) => {
 		if (!project?.image0 && !project?.video0 ) { return "" }
 		const _class = `class="project-link"`
@@ -79,71 +102,87 @@ const projectBlock = async (block, eleventy, data) => {
 		`).replace(/^\t\t\t/mg, "\t".repeat(4))
 	}
 	const projectImage = (project) => {
-		if (!project.image0) { return "" }
+		if (!project.image0?.url) { return "" }
 		return project?.isRepeated && project?.image1
 			? eleventy.sanityImage(project?.image1, {
 				element: "picture",
-				classNames: ["project-image"],
+				className: "project-image",
 				backgroundSize: "auto 30rem",
 			}).replace(/^\t\t\t/mg, "\t".repeat(4))
 			: eleventy.sanityImage(project?.image0, {
 				element: "picture",
-				classNames: ["project-image"],
+				className: "project-image",
 				backgroundSize: "auto 30rem",
 			}).replace(/^\t\t\t/mg, "\t".repeat(4))
 	}
 	const projectVideo = async (project) => {
-		if (!project.video0) { return "" }
+		if (!project.video0?.url) { return "" }
 		const _class = `class="project-video"`
 		const options = [_class]
 		return (`
 			<div ${options?.filter(Boolean).join(" ")}>
-				${ project?.isRepeated && project?.video1 ? await eleventy.createVideoFromUrl(eleventy.parseUrl(project?.video1?.url)) : await eleventy.createVideoFromUrl(eleventy.parseUrl(project?.video0?.url)) }
+				${ project?.isRepeated && project?.video1?.url
+					? await eleventy.createVideoFromUrl(eleventy.parseUrl(project?.video1?.url))
+					: await eleventy.createVideoFromUrl(eleventy.parseUrl(project?.video0?.url))
+				}
 			</div>
 		`).replace(/^\t\t\t/mg, "\t".repeat(4))
 	}
-	const projectLooks = (project) => {
-		if (!project?.looks || project?.looks?.length <= 1) { return "" }
+	const projectLooks = (project, blockType) => {
+		if (
+			!project?.looks
+			|| (project?.looks?.filter(look => look?.url)?.length <= 1 && blockType !== "lookBlock")
+			|| project?.looks?.filter(look => look?.url)?.length === project?.looks?.filter(look => look?.isRepeated)?.length
+		) { return "" }
 		const _class = `class="project-looks"`
-		const dataSize = `data-size="${project?.looks?.length}"`
+		const dataSize = `data-size="${project?.looks?.filter(look => look?.url)?.length}"`
 		const options = [_class, dataSize]
 		return (`
 			<div ${options?.filter(Boolean)?.join(" ")}>
-				${project?.looks?.map(look => {
+				${project?.looks?.filter(look => look?.url)?.map(look => {
 					return eleventy.sanityImage(look, {
 						element: "picture",
-						classNames: ["project-look"],
+						className: "project-look",
+						attributes: {
+							"data-is-repeated": look?.isRepeated ? "true" : "",
+						}
 					})
 				}).join("").replace(/^\t\t\t/mg, "\t".repeat(4))}
 			</div>
 		`).replace(/^\t\t\t/mg, "\t".repeat(4))
 	}
 	return await Promise.all(block?.projects?.map(async project => {
+		if (
+			!project?.image0?.url
+			&& !project?.video0?.url
+			&& project?.looks?.filter(look => look?.url)?.length === project?.looks?.filter(look => look?.isRepeated)?.length
+		) { return "" }
 		const _class = `class="project"`
 		const dataIsRepeated = project?.isRepeated ? `data-is-repeated="true"` : ""
-		const dataContents = `data-contents="${[project?.image0 ? "image" : "", project?.video0 ? "video" : "", project?.looks?.length > 1 ? "looks" : "", ]?.filter(Boolean)?.join(" ")}"`
+		const dataContents = `data-contents="${[
+			project?.image0?.url ? "image" : "",
+			project?.video0?.url ? "video" : "",
+			(project?.looks?.length > 1 || block?.type === "lookBlock") ? "looks" : "",
+		]?.filter(Boolean)?.join(" ")}"`
 		const style = {
 			"--colour-dominant-background": project?.image1?.palette?.background || project?.image0?.palette?.background,
 			"--colour-dominant-foreground": project?.image1?.palette?.foreground || project?.image0?.palette?.foreground,
 		}
-		const options = [_class, dataIsRepeated, dataContents, project?.image0 ? `style="${eleventy.formatCss(style)}"` : ""]
+		const options = [
+			_class,
+			dataIsRepeated,
+			dataContents,
+			(project?.image0?.palette?.background && project?.image0?.palette?.foreground) ? `style="${eleventy.formatCss(style)}"` : ""
+		]
 		return (`
 			<article ${options?.filter(Boolean)?.join(" ")}>
 				${projectLink(project)}
 				${projectImage(project)}
 				${await projectVideo(project)}
-				${projectLooks(project)}
+				${projectLooks(project, block?.type)}
 			</article>
 		`).replace(/^\t\t\t/mg, "\t".repeat(4))
 	})).then(result => result.join(""))
-}
-
-const categoryBlock = async (block, eleventy, data) => {
-	return await projectBlock(block, eleventy, data)
-}
-
-const campaignBlock = (block) => {
-	return `campaign`
 }
 
 module.exports = Page

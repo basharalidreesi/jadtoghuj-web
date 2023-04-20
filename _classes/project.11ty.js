@@ -32,10 +32,10 @@ const lookbook = async (data, eleventy) => {
 	const dataSize = `data-size="${data.project?.lookbook?.length}"`
 	const options = [_class, dataSize]
 	return (`
-		<div ${options?.filter(Boolean).join(" ")}>
+		<figure ${options?.filter(Boolean).join(" ")}>
 			${await Promise.all(data.project?.lookbook?.map(async entry => await lookbookSwitch(entry, eleventy))).then(result => result.join(""))}
 			${lookbookControls(data)}
-		</div>
+		</figure>
 	`)
 }
 
@@ -50,7 +50,7 @@ const lookbookSwitch = async (entry, eleventy) => {
 const imageEntry = (entry, eleventy) => {
 	return eleventy.sanityImage(entry.asset, {
 		element: "picture",
-		classNames: ["lookbook-entry"],
+		className: "lookbook-entry",
 		attributes: {
 			"data-type": "image",
 		},
@@ -137,12 +137,12 @@ const projectStats = (data) => {
 }
 
 const projectContributions = (data) => {
-	if (!data.project?.contributors) { return "" }
+	if (!data.project?.contributions) { return "" }
 	const _class = `class="project-contributions"`
 	const options = [_class]
 	return (`
 		<dl ${options?.filter(Boolean)?.join(" ")}>
-			${data.project?.contributors?.map(contribution => {
+			${data.project?.contributions?.map(contribution => {
 				return (`
 					<dt class="text">
 						${contribution?.role}
@@ -174,59 +174,84 @@ const projectLooks = (data, eleventy) => {
 	const _class = `class="project-looks"`
 	const options = [_class]
 	return (`
-		<div ${options?.filter(Boolean)?.join(" ")}>
+		<table ${options?.filter(Boolean)?.join(" ")}>
+			<tr class="table-header">
+				<th scope="col">
+					Title
+				</th>
+				<th scope="col">
+					Image
+				</th>
+				<th scope="col">
+					Description
+				</th>
+			</tr>
 			${data.project?.looks?.map(look => {
 				return projectLook(look, eleventy)
 			}).join("")}
-		</div>
+		</table>
 	`).replace(/^\t\t/mg, "\t".repeat(6))
 }
 
 const projectLook = (look, eleventy) => {
+	if (!look?.title && !look?.display && !look?.description) { return "" }
+	const lookTitle = () => {
+		const _class = `class="look-title"`
+		const scope = `scope="row"`
+		const options = [_class, scope]
+		return (`
+			<th ${options?.filter(Boolean)?.join(" ")}>
+				<p class="text" dir="auto">
+					${look.title || "Untitled"}
+				</p>
+			</th>
+		`).replace(/^\t\t/mg, "\t".repeat(3))
+	}
+	const lookImage = () => {
+		const element = "td"
+		const className = "look-image"
+		if (!look?.display) {
+			return (`
+				<${element} class="${className}">
+					<svg width="24" height="24" viewBox="0 0 24 24" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+						<line x1="0" y1="0" x2="24" y2="24" />
+						<line x1="0" y1="24" x2="24" y2="0" />
+					</svg>
+				</${element}>
+			`)
+		}
+		return eleventy.sanityImage(look?.display, {
+			element: element,
+			className: className,
+		})
+	}
+	const lookDescription = () => {
+		const _class = `class="look-description"`
+		const options = [_class]
+		return (`
+			<td ${options?.filter(Boolean)?.join(" ")}>
+				${eleventy.portableTextToHtml(look?.description)}
+			</td>
+		`).replace(/^\t\t/mg, "\t".repeat(3))
+	}
+	const id = `id="${look?.id}"`
 	const _class = `class="project-look"`
-	const options = [_class]
+	const dataContents = `data-contents="${[
+		look?.display ? "image" : "",
+		look?.description ? "description" : "",
+	]?.filter(Boolean)?.join(" ")}"`
+	const options = [
+		id,
+		_class,
+		dataContents,
+	]
 	return (`
-		<figure ${options?.filter(Boolean)?.join(" ")}>
-			${lookImage(look, eleventy)}
-			${lookInfo(look, eleventy)}
-		</figure>
+		<tr ${options?.filter(Boolean)?.join(" ")}>
+			${lookTitle()}
+			${lookImage()}
+			${lookDescription()}
+		</tr>
 	`).replace(/^\t\t/mg, "\t".repeat(3))
-}
-
-const lookImage = (look, eleventy) => {
-	if (!look?.display) { return "" }
-	return eleventy.sanityImage(look?.display, {
-		element: "picture",
-		classNames: ["look-image"],
-	})
-}
-
-const lookInfo = (look, eleventy) => {
-	if (!look?.description) { return "" }
-	var element = "figcaption"
-	if (!look?.display) { element = "div" }
-	const _class = `class="look-description"`
-	const options = [_class]
-	return (`
-		<${element} ${options?.filter(Boolean)?.join(" ")}>
-			${lookTitle(look)}
-			${lookDescription(look, eleventy)}
-		</${element}>
-	`).replace(/^\t\t/mg, "\t".repeat(3))
-}
-
-const lookTitle = (look) => {
-	if (!look?.title) { return "" }
-	return (`
-		<header>
-			${look.title}
-		</header>
-	`).replace(/^\t\t/mg, "\t".repeat(3))
-}
-
-const lookDescription = (look, eleventy) => {
-	if (!look?.description) { return "" }
-	return eleventy.portableTextToHtml(look?.description)
 }
 
 module.exports = Project

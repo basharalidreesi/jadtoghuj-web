@@ -71,7 +71,7 @@ const description = (data, eleventy) => {
 	const pageDescription = eleventy.portableTextToPlainText(data.page?.description) || ""
 	const projectDescription = eleventy.portableTextToPlainText(data.project?.description) || ""
 	const siteDescription = data.settings?.description || ""
-	return [pageDescription || projectDescription, siteDescription]?.filter(Boolean)?.join(" • ")
+	return [pageDescription || projectDescription, siteDescription]?.filter(Boolean)?.join(" ✦ ")
 }
 
 const keywords = (data) => {
