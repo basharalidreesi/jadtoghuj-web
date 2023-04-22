@@ -7,7 +7,6 @@ class Main {
 			<head>
 				<title>${title(data)}</title>
 				<meta name="description" content="${description(data, eleventy)}">
-				<meta name="keywords" content="${keywords(data)}">
 				<meta name="theme-color" content="${themeColour(data)}">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0 viewport-fit=cover">
 				<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -74,10 +73,6 @@ const description = (data, eleventy) => {
 	return [pageDescription || projectDescription, siteDescription]?.filter(Boolean)?.join(" ✦ ")
 }
 
-const keywords = (data) => {
-	return data.settings?.keywords?.filter(Boolean)?.join(", ")
-}
-
 const themeColour = (data) => {
 	return data.settings?.colours?.top || ""
 }
@@ -112,8 +107,8 @@ const colours = (data, eleventy) => {
 
 const bodyOptions = (data, eleventy) => {
 	const style = {
-		"--colour-dominant-background": data.project?.image0?.palette?.background,
-		"--colour-dominant-foreground": data.project?.image0?.palette?.foreground,
+		"--colour-dominant-background": `${data.project?.image0?.palette?.background}80`,
+		"--colour-dominant-foreground": `${data.project?.image0?.palette?.foreground}80`,
 		"--colour-background-bottom": "var(--colour-dominant-background)",
 	}
 	const dataLayout = `data-layout="${data.page?.fileSlug}"`
@@ -134,7 +129,7 @@ const logo = (data, eleventy) => {
 			</g>
 		</svg>
 	`
-	return data.settings?.logo?.url ? eleventy.createSvgFromUrl(data.settings?.logo?.url) : defaultLogo
+	return data.settings?.logo?.url ? eleventy.svgFromUrl(data.settings?.logo?.url) : defaultLogo
 }
 
 const navButton = `

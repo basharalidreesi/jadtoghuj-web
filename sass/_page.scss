@@ -6,12 +6,7 @@
 
 	.text-block {
 		.text {
-			text-align: justify;
-			text-align-last: center;
-			margin-inline: auto;
-			@media (max-width: 768px) {
-				text-align: center;
-			}
+			@include justifiedText;
 		}
 		& + .text-block {
 			margin-block-start: 1rem;
@@ -149,10 +144,13 @@
 			width: calc(20rem / 0.5625);
 			max-width: 100%;
 		}
+		div,
 		iframe {
-			display: block;
 			width: 100%;
 			height: 100%;
+		}
+		iframe {
+			display: block;
 		}
 	}
 
@@ -179,9 +177,9 @@
 			&[data-is-repeated="true"] {
 				display: none;
 			}
-		}
-		img {
-			filter: drop-shadow(0 0 0.0625rem var(--colour-dominant-foreground));
+			&[data-is-opaque="false"] img {
+				filter: drop-shadow(0 0 0.0625rem var(--colour-dominant-foreground));
+			}
 		}
 	}
 

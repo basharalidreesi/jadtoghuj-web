@@ -110,7 +110,7 @@ body {
 		}
 		.footer {
 			position: relative;
-			background: var(--colour-background-bottom);
+			background: white linear-gradient(to bottom, var(--colour-background-bottom), var(--colour-background-bottom));
 		}
 	}
 	@media (any-hover: hover) {

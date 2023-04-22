@@ -5,7 +5,6 @@ module.exports = async function () {
 	*[_type == "settings" && website == "jadtoghuj.com"][0] {
 		title,
 		description,
-		keywords,
 		"logo": logo.asset->{url},
 		colours {
 			top,

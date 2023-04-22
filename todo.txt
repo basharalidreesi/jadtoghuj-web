@@ -1,4 +1,5 @@
 TODO
+[] create carousel indicators?
 [] add links to project info in project view such as embedding instagram posts (think more about this)
 [] think about adding other types of embeds in addition to youtube and vimeo such as spotify, soundcloud, instagram, tiktok
 [] create campaign blocks
@@ -26,3 +27,4 @@ DONE
 [x] think about generated description concat
 [x] think about having colour settings on the page level
 [x] think about enabling/disabling project tinting on the page level
+[x] create sitemap

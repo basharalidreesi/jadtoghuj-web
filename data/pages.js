@@ -45,7 +45,7 @@ module.exports = async function () {
 									},
 								},
 							},
-							"looks": array::compact(^.looks[]->display.asset -> {
+							"looks": array::compact(^.looks[]->image.asset -> {
 								url,
 								"height": metadata.dimensions.height,
 								"width": metadata.dimensions.width,
@@ -82,11 +82,11 @@ module.exports = async function () {
 								_id in array::compact(^.^.^.contents[].looks[]._ref) => {
 									"isRepeated": true
 								},
-								"url": display.asset->url,
-								"height": display.asset->metadata.dimensions.height,
-								"width": display.asset->metadata.dimensions.width,
-								"isOpaque": display.asset->metadata.isOpaque,
-								"lqip": display.asset->metadata.lqip,
+								"url": image.asset->url,
+								"height": image.asset->metadata.dimensions.height,
+								"width": image.asset->metadata.dimensions.width,
+								"isOpaque": image.asset->metadata.isOpaque,
+								"lqip": image.asset->metadata.lqip,
 							}),
 						},
 					},
@@ -139,11 +139,11 @@ module.exports = async function () {
 							_id in array::compact(^.^.^.contents[].looks[]._ref) => {
 								"isRepeated": true
 							},
-							"url": display.asset->url,
-							"height": display.asset->metadata.dimensions.height,
-							"width": display.asset->metadata.dimensions.width,
-							"isOpaque": display.asset->metadata.isOpaque,
-							"lqip": display.asset->metadata.lqip,
+							"url": image.asset->url,
+							"height": image.asset->metadata.dimensions.height,
+							"width": image.asset->metadata.dimensions.width,
+							"isOpaque": image.asset->metadata.isOpaque,
+							"lqip": image.asset->metadata.lqip,
 						}),
 					} | order(year desc, lower(title) asc),
 				},

@@ -18,31 +18,31 @@ class Project {
 			permalink: data => `${data.settings.baseUrl || ""}${data.settings.projectPath}/${data.project.address}/`,
 		}
 	}
-	async render(data) {
+	render(data) {
 		const eleventy = this
 		return (`
-			${await lookbook(data, eleventy)}
+			${lookbook(data, eleventy)}
 			${projectInfo(data, eleventy)}
 		`)
 	}
 }
 
-const lookbook = async (data, eleventy) => {
+const lookbook = (data, eleventy) => {
 	const _class = `class="project-lookbook"`
 	const dataSize = `data-size="${data.project?.lookbook?.length}"`
 	const options = [_class, dataSize]
 	return (`
 		<figure ${options?.filter(Boolean).join(" ")}>
-			${await Promise.all(data.project?.lookbook?.map(async entry => await lookbookSwitch(entry, eleventy))).then(result => result.join(""))}
+			${data.project?.lookbook?.map(entry => lookbookSwitch(entry, eleventy)).join("")}
 			${lookbookControls(data)}
 		</figure>
 	`)
 }
 
-const lookbookSwitch = async (entry, eleventy) => {
+const lookbookSwitch = (entry, eleventy) => {
 	switch(entry?.type) {
 		case "image": return imageEntry(entry, eleventy)
-		case "video": return await videoEntry(entry, eleventy)
+		case "video": return videoEntry(entry, eleventy)
 		default: return ""
 	}
 }
@@ -57,21 +57,18 @@ const imageEntry = (entry, eleventy) => {
 	}).replace(/^\t\t\t/mg, "\t".repeat(6))
 }
 
-const videoEntry = async (entry, eleventy) => {
-	const _class = `class="lookbook-entry"`
-	const dataType = `data-type="video"`
-	const options = [_class, dataType]
-	return (`
-		<div ${options?.filter(Boolean)?.join(" ")}>
-			<div>
-				${await eleventy.createVideoFromUrl(eleventy.parseUrl(entry?.url))}
-			</div>
-		</div>
-	`).replace(/^\t\t\t/mg, "\t".repeat(6))
+const videoEntry = (entry, eleventy) => {
+	return eleventy.oEmbed(entry?.url, {
+		element: "div",
+		className: "lookbook-entry",
+		attributes: {
+			"data-type": "video",
+		},
+	}).replace(/^\t\t\t/mg, "\t".repeat(6))
 }
 
 const lookbookControls = (data) => {
-	if (!data.project?.lookbook || data.project?.lookbook?.length <= 1) { return "" }
+	if (!data.project?.lookbook) { return "" }
 	return (`
 		<div class="lookbook-controls">
 			<button class="left" data-direction="-1">
@@ -92,7 +89,13 @@ const lookbookControls = (data) => {
 
 const projectInfo = (data, eleventy) => {
 	const _class = `class="project-info"`
-	const options = [_class]
+	const dataContents = `data-contents="${[
+		data.project?.description ? "description" : "",
+		data.project?.year || data.project?.categories ? "stats" : "",
+		data.project?.contributions ? "contributions" : "",
+		data.project?.looks ? "looks" : ""
+	]?.filter(Boolean)?.join(" ")}"`
+	const options = [_class, dataContents]
 	return (`
 		<div ${options?.filter(Boolean)?.join(" ")}>
 			${projectTitle(data)}
@@ -145,7 +148,9 @@ const projectContributions = (data) => {
 			${data.project?.contributions?.map(contribution => {
 				return (`
 					<dt class="text">
-						${contribution?.role}
+						<span>
+							${contribution?.role}
+						</span>
 					</dt>
 					${contribution?.persons?.map(person => {
 						if (person?.url) {
@@ -159,7 +164,9 @@ const projectContributions = (data) => {
 						}
 						return (`
 							<dd class="text">
-								${person?.name}
+								<span>
+									${person?.name}
+								</span>
 							</dd>
 						`).replace(/^\t\t\t/mg, "\t".repeat(1))
 					}).join("")}
@@ -194,7 +201,7 @@ const projectLooks = (data, eleventy) => {
 }
 
 const projectLook = (look, eleventy) => {
-	if (!look?.title && !look?.display && !look?.description) { return "" }
+	if (!look?.title && !look?.image && !look?.description) { return "" }
 	const lookTitle = () => {
 		const _class = `class="look-title"`
 		const scope = `scope="row"`
@@ -205,25 +212,29 @@ const projectLook = (look, eleventy) => {
 					${look.title || "Untitled"}
 				</p>
 			</th>
-		`).replace(/^\t\t/mg, "\t".repeat(3))
+		`)
 	}
 	const lookImage = () => {
-		const element = "td"
-		const className = "look-image"
-		if (!look?.display) {
+		const _class = `class="look-image"`
+		const options = [_class]
+		if (!look?.image) {
 			return (`
-				<${element} class="${className}">
+				<td ${options?.filter(Boolean)?.join(" ")}>
 					<svg width="24" height="24" viewBox="0 0 24 24" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-						<line x1="0" y1="0" x2="24" y2="24" />
-						<line x1="0" y1="24" x2="24" y2="0" />
+						<path d="M0,12c1.6,0,3.14-0.31,4.6-0.92C6,10.52,7.29,9.64,8.47,8.46c1.16-1.14,2.04-2.43,2.64-3.87c0.59-1.4,0.88-2.93,0.88-4.6c0,1.62,0.3,3.15,0.9,4.6c0.54,1.36,1.42,2.65,2.64,3.87c1.12,1.14,2.41,2.01,3.87,2.62C20.85,11.69,22.38,12,24,12c-1.62,0-3.15,0.31-4.6,0.92c-1.46,0.61-2.76,1.48-3.87,2.62c-1.21,1.23-2.09,2.52-2.64,3.87c-0.6,1.46-0.9,2.99-0.9,4.6c0-1.65-0.29-3.18-0.88-4.6c-0.6-1.43-1.48-2.72-2.64-3.87C7.29,14.36,6,13.48,4.6,12.91C3.14,12.3,1.6,12,0,12z" />
 					</svg>
-				</${element}>
-			`)
+				</td>
+			`).replace(/^\t\t\t/mg, "\t".repeat(2))
 		}
-		return eleventy.sanityImage(look?.display, {
-			element: element,
-			className: className,
-		})
+		return (`
+			<td ${options?.filter(Boolean)?.join(" ")}>
+				${eleventy.sanityImage(look?.image, {
+					element: "picture",
+					className: "look",
+					backgroundSize: "auto 100%",
+				}).replace(/^\t\t\t/mg, "\t".repeat(4))}
+			</td>
+		`)
 	}
 	const lookDescription = () => {
 		const _class = `class="look-description"`
@@ -232,12 +243,12 @@ const projectLook = (look, eleventy) => {
 			<td ${options?.filter(Boolean)?.join(" ")}>
 				${eleventy.portableTextToHtml(look?.description)}
 			</td>
-		`).replace(/^\t\t/mg, "\t".repeat(3))
+		`)
 	}
 	const id = `id="${look?.id}"`
 	const _class = `class="project-look"`
 	const dataContents = `data-contents="${[
-		look?.display ? "image" : "",
+		look?.image ? "image" : "",
 		look?.description ? "description" : "",
 	]?.filter(Boolean)?.join(" ")}"`
 	const options = [

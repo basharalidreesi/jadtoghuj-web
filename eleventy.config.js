@@ -4,10 +4,10 @@ const { uriLooksSafe } = require("@portabletext/to-html")
 module.exports = function(eleventyConfig) {
 
 	eleventyConfig.addJavaScriptFunction("sanityImage", function(value, params = {}) {
-		if (!value?.url) { return }
+		if (!value || !value?.url) { return }
 		const {
 			element = "div",
-			className,
+			className = "",
 			classNames = [],
 			backgroundSize = "100% 100%",
 			backgroundPosition = "center",
@@ -20,57 +20,88 @@ module.exports = function(eleventyConfig) {
 			"background-size": value.lqip && value.isOpaque ? backgroundSize : "",
 			"background-position": value.lqip && value.isOpaque ? backgroundPosition : "",
 		}
-		const options = [(className || classNames?.filter(Boolean)) ? _class : "", value.lqip && value.isOpaque ? `style="${eleventyConfig.getFilter("formatCss")(style)}"` : "", attributes ? eleventyConfig.getFilter("formatAttributes")(attributes) : ""]
+		const dataIsOpaque = `data-is-opaque="${value.isOpaque}"`
+		const options = [
+			(className || classNames.filter(Boolean)?.length >= 1) ? _class : "",
+			value.lqip && value.isOpaque ? `style="${eleventyConfig.getFilter("formatCss")(style)}"` : "",
+			dataIsOpaque,
+			attributes ? eleventyConfig.getFilter("formatAttributes")(attributes) : "",
+		]
 		return (`
 			<${element} ${options?.filter(Boolean)?.join(" ")}>
 				<img src="${ value.url }" alt="" loading="lazy" width="${ value.width }" height="${ value.height }" />
 			</${element}>
 		`)
 	})
+	
+	eleventyConfig.addJavaScriptFunction("oEmbed", function(value, params = {}) {
+		if (!value) { return }
+		const {
+			element = "div",
+			className = "",
+			classNames = [],
+			style = {},
+			attributes = {},
+		} = params
+		const _class = `class="${[className, ...classNames]?.filter(Boolean)?.join(" ")}"`
+		const options = [
+			(className || classNames.filter(Boolean)?.length >= 1) ? _class : "",
+			Array.from(style).length >= 1 ? `style="${eleventyConfig.getFilter("formatCss")(style)}"` : "",
+			attributes ? eleventyConfig.getFilter("formatAttributes")(attributes) : "",
+		]
+		const url = value
+		const hostname = new URL(value).hostname.replace("www.", "")
+		return (`
+			<${element} ${options?.filter(Boolean)?.join(" ")} data-oembed="true" data-oembed-url="${url}" data-oembed-hostname="${hostname}">
+				<!-- placeholder -->
+			</${element}>
+		`)
+	})
 
-	eleventyConfig.addJavaScriptFunction("createSvgFromUrl", async function(value) {
+	eleventyConfig.addJavaScriptFunction("svgFromUrl", async function(value) {
 		if (!value) { return }
 		return await fetch(value).then(async function (response) {
 			return response.text()
 		})
 	})
 
-	eleventyConfig.addJavaScriptFunction("parseUrl", function(value) {
-		const hostname = new URL(value).hostname.replace("www.", "")
-		return {
-			url: value,
-			hostname: hostname,
-		}
-	})
-
-	eleventyConfig.addJavaScriptFunction("createVideoFromUrl", async function(value) {
-		if (!value.url || !value.hostname) { return }
-		const url = encodeURIComponent(value.url)
-		if (value.hostname === "youtube.com" || value.hostname === "youtu.be") {
-			return await fetch(`https://youtube.com/oembed?url=${url}&format=json`).then(async function (response) {
-				return response.json().then(function (data) {
-					return data.html
-						? data.html.replace("youtube.com", "youtube-nocookie.com")
-						: ""
-				})
-			})
-		}
-		if (value.hostname === "vimeo.com") {
-			return await fetch(`https://vimeo.com/api/oembed.json?url=${url}`).then(async function (response) {
-				return response.json().then(function (data) {
-					return data.html
-						? data.html
-						: ""
-				})
-			})
-		}
-	})
+	// eleventyConfig.addJavaScriptFunction("scrapeUrl", async function(value) {
+	// 	// https://stackoverflow.com/questions/72916900/integrating-a-link-preview-image-scraper-into-link-and-tab-generation
+	// 	if (!value) { return }
+	// 	const response = await fetch(value)
+	// 	const text = await response.text()
+	// 	const scrape = function(target) {
+	// 		switch(target) {
+	// 			case "title": {
+	// 				const title = text.match(/<title>(.*?)<\/title>/)[1]
+	// 				return title
+	// 			}
+	// 			case "ogImage": {
+	// 				const tokens = text.split(" ")
+	// 				const ogImageIndex = (tokens.indexOf(`property="og:image"`) + 1)
+	// 				const ogImageUrl = tokens[ogImageIndex];
+	// 				if (ogImageUrl.match(/\"(.*?)\"/mg) !== null) {
+	// 					return ogImageUrl.match(/\"(.*?)\"/mg).toString()
+	// 				} else {
+	// 					return null
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// 	const finds = {
+	// 		title: scrape("title"),
+	// 		image: scrape("ogImage"),
+	// 	}
+	// 	return finds.image
+	// })
 
 	eleventyConfig.addJavaScriptFunction("strip", function(value) {
+		if (!value) { return }
 		return value.replace(/\s+/g, " ").trim()
 	})
 
 	eleventyConfig.addJavaScriptFunction("camelCaseToKebabCase", function(value) {
+		if (!value) { return }
 		return value.replace(/([A-Z])/g, function($1) {
 			return "-"+$1.toLowerCase();
 		})
@@ -91,6 +122,7 @@ module.exports = function(eleventyConfig) {
 	})
 
 	eleventyConfig.addJavaScriptFunction("portableTextToHtml", function(value) {
+		if (!value) { return }
 		return toHTML(value, {
 			components: {
 				block: (props) => {
@@ -121,23 +153,22 @@ module.exports = function(eleventyConfig) {
 	})
 
 	eleventyConfig.addJavaScriptFunction("portableTextToPlainText", function(value) {
-		if (value) {
-			return value
-				.map(block => {
-					if (block._type !== "block" || !block.children) {
-						return ""
+		if (!value) { return }
+		return value
+			.map(block => {
+				if (block._type !== "block" || !block.children) {
+					return ""
+				}
+				return block.children.map((child) => {
+					if (child._type == "span") {
+						return child.text
 					}
-					return block.children.map((child) => {
-						if (child._type == "span") {
-							return child.text
-						}
-						if (child._type == "person") {
-							return child.name
-						}
-					}).join("")
-				})
-				.join("\n\n")
-		}
+					if (child._type == "person") {
+						return child.name
+					}
+				}).join("")
+			})
+			.join("\n\n")
 	})
 
 	eleventyConfig.setServerOptions({
@@ -145,22 +176,22 @@ module.exports = function(eleventyConfig) {
 	})
 
 	eleventyConfig.addPassthroughCopy({
-		"_fonts": "assets/fonts"
+		"fonts": "assets/fonts"
 	})
 	eleventyConfig.addPassthroughCopy({
-		"_static": "/"
+		"static": "/"
 	})
 	eleventyConfig.addPassthroughCopy({
-		"_js": "assets/js"
+		"js": "assets/js"
 	})
 
 	return {
 		dir: {
 			input: ".",
-			includes: "_includes",
-			layouts: "_layouts",
-			data: "_data",
-			output: "_dist",
+			includes: "includes",
+			layouts: "layouts",
+			data: "data",
+			output: "dist",
 		},
 	}
 

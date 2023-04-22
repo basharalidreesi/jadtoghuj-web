@@ -1,5 +1,14 @@
 @charset "UTF-8";
 
+@mixin justifiedText() {
+	text-align: justify;
+	text-align-last: center;
+	margin-inline: auto;
+	@media (max-width: 768px) {
+		text-align: center;
+	}
+}
+
 @mixin visuallyHidden() {
 	position: absolute;
 	width: 1px;

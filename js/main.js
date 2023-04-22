@@ -9,11 +9,14 @@ const jad = {
 		lookbook: document.querySelector(".project-lookbook"),
 		lookbookEntries: document.querySelectorAll(".lookbook-entry"),
 		lookbookControls: document.querySelectorAll(".lookbook-controls > *"),
+		// oEmbed
+		oEmbeds: document.querySelectorAll(`[data-oembed="true"]`),
 	},
 
 	initAllScripts: function() {
 		this.nav.initNavScripts();
 		this.lookbook.initLookbookScripts();
+		this.oEmbeds.initOEmbedScripts();
 	},
 
 	nav: {
@@ -86,6 +89,74 @@ const jad = {
 		},
 		seek: function(direction) {
 			console.log(direction);
+		},
+	},
+
+	oEmbeds: {
+		initOEmbedScripts: function() {
+			if (!jad.lexicon.oEmbeds) { return; }
+			this.enableOEmbeds();
+		},
+		enableOEmbeds: function() {
+			jad.lexicon.oEmbeds.forEach(async (target) => {
+				const params = this.parseOEmbedTarget(target);
+				const query = this.resolveOEmbedTarget(params);
+				const oEmbed = await this.getOEmbed(query);
+				this.createOEmbed(target, oEmbed?.html);
+			});
+		},
+		parseOEmbedTarget: function(target) {
+			const url = target.getAttribute("data-oembed-url");
+			const hostname = target.getAttribute("data-oembed-hostname");
+			return {
+				url: url,
+				hostname: hostname,
+			}
+		},
+		resolveOEmbedTarget: function({ url, hostname }) {
+			switch(hostname) {
+				case "youtube.com": return this.formatOEmbedQuery("youtube", url);
+				case "youtu.be": return this.formatOEmbedQuery("youtube", url);
+				case "vimeo.com": return this.formatOEmbedQuery("vimeo", url);
+			}
+		},
+		formatOEmbedQuery: function(service, url) {
+			const uri = encodeURIComponent(url)
+			switch (service) {
+				case "youtube": return (`https://youtube.com/oembed?url=${uri}&format=json`);
+				case "vimeo": return (`https://vimeo.com/api/oembed.json?url=${uri}`);
+			}
+		},
+		getOEmbed: async function(query) {
+			return await fetch(query).then(async function (response) {
+				return response.json().then(function (data) {
+					return data;
+				});
+			});
+		},
+		createOEmbed: function(target, html) {
+			if (!html) { return; }
+			const div = document.createElement("div");
+			div.innerHTML = html;
+			this.modifyOEmbed(Array.from(div.children));
+			target.appendChild(div);
+		},
+		modifyOEmbed: function(targets) {
+			const addLazyLoading = (target) => {
+				target.setAttribute("loading", "lazy");
+			}
+			const addYouTubeNoCookie = (target) => {
+				target.setAttribute("src", target.getAttribute("src").replace("youtube.com", "youtube-nocookie.com"));
+			}
+			targets.forEach((target) => {
+				const tagName = target.tagName.toLowerCase();
+				if (tagName === "iframe" && target.getAttribute("loading") !== "lazy") {
+					addLazyLoading(target);
+				}
+				if (tagName === "iframe" && target.getAttribute("src").includes("youtube.com")) {
+					addYouTubeNoCookie(target);
+				}
+			});
 		},
 	},
 

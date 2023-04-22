@@ -46,7 +46,7 @@ module.exports = async function () {
 		looks[] -> {
 			"id": _id,
 			title,
-			"display": display.asset -> {
+			"image": image.asset -> {
 				url,
 				"height": metadata.dimensions.height,
 				"width": metadata.dimensions.width,
