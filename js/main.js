@@ -3,20 +3,24 @@
 const jad = {
 
 	lexicon: {
-		// nav
+		// header
+		header: document.querySelector(".header"),
 		navButtons: document.querySelectorAll(".nav-expand"),
 		// lookbook
-		lookbook: document.querySelector(".project-lookbook"),
-		lookbookEntries: document.querySelectorAll(".lookbook-entry"),
-		lookbookControls: document.querySelectorAll(".lookbook-controls > *"),
+		lookbook: document.querySelector(`[data-layout="project"] .project-lookbook`),
+		lookbookEntries: document.querySelectorAll(`[data-layout="project"] .lookbook-entry`),
+		lookbookControlers: document.querySelectorAll(`[data-layout="project"] .lookbook-controlers > *`),
+		projectTitle: document.querySelector(`[data-layout="project"] .project-info .project-title`),
 		// oEmbed
 		oEmbeds: document.querySelectorAll(`[data-oembed="true"]`),
+		// scraping
 	},
 
 	initAllScripts: function() {
 		this.nav.initNavScripts();
 		this.lookbook.initLookbookScripts();
 		this.oEmbeds.initOEmbedScripts();
+		// this.initScrapingScripts();
 	},
 
 	nav: {
@@ -56,39 +60,109 @@ const jad = {
 
 	lookbook: {
 		initLookbookScripts: function() {
-			if (!jad.lexicon.lookbookControls) { return; }
+			if (!jad.lexicon.lookbook) { return; }
+			this.enableProjectTitle();
 			this.observeIntersections();
-			this.enableControls();
+			this.observeResizes();
+			this.enableControlers();
+		},
+		enableProjectTitle: function() {
+			jad.lexicon.projectTitle.addEventListener("click", () => {
+				const offsetTop = jad.lexicon.projectTitle.parentElement.offsetTop;
+				const offsetHeight = jad.lexicon.header.offsetHeight;
+				const padding = 16;
+				const scrollTop = offsetTop - offsetHeight - padding;
+				if (window.scrollY >= scrollTop) {
+					window.scrollTo(0, 0);
+					return;
+				}
+				window.scrollTo(0, scrollTop);
+			});
 		},
 		currentIntersection: null,
 		observeIntersections: function() {
-			let observer = new IntersectionObserver((entries) => {
+			const observer = new IntersectionObserver((entries) => {
 				entries.forEach((entry) => {
 					if (entry.isIntersecting) {
 						this.currentIntersection = entry.target;
-						entry.target.classList.add("active");
-					} else {
-						entry.target.classList.remove("active");
 					}
 				});
 			}, {
 				root: jad.lexicon.lookbook,
 				rootMargin: "0px -50% 0px -50%",
 			});
-			jad.lexicon.lookbookEntries.forEach((image) => {
-				observer.observe(image);
+			jad.lexicon.lookbookEntries.forEach((entry) => {
+				observer.observe(entry);
 			});
 		},
-		enableControls: function() {
-			jad.lexicon.lookbookControls.forEach((control) => {
-				const direction = parseInt(control.getAttribute("data-direction"));
-				control.addEventListener("click", () => {
+		observeResizes: function() {
+			const toleranceAmount = 100;
+			const observer = new ResizeObserver((entries) => {
+				entries.forEach((entry) => {
+					if (Math.abs(entry.target.scrollWidth - window.innerWidth) >= toleranceAmount) {
+						jad.lexicon.lookbookControlers[0].parentElement.removeAttribute("hidden");
+					} else {
+						jad.lexicon.lookbookControlers[0].parentElement.setAttribute("hidden", "hidden");
+					}
+				});
+			});
+			observer.observe(jad.lexicon.lookbook);
+		},
+		enableControlers: function() {
+			jad.lexicon.lookbookControlers.forEach((controler) => {
+				controler.addEventListener("click", () => {
+					const direction = this.resolveDirection(controler.getAttribute("data-direction"));
 					this.seek(direction);
 				});
 			});
 		},
+		resolveDirection: function(request) {
+			const toleranceAmount = 50;
+			const delta = jad.lookbook.currentIntersection.offsetLeft - jad.lexicon.lookbook.scrollLeft + (jad.lookbook.currentIntersection.offsetWidth / 2) - (window.innerWidth / 2);
+			if (request === "previous" && jad.lexicon.lookbook.scrollLeft <= toleranceAmount) {
+				return "end";
+			}
+			if (request === "next" && Math.abs(jad.lexicon.lookbook.scrollLeft - (jad.lexicon.lookbook.scrollWidth - window.innerWidth)) <= toleranceAmount) {
+				return "start";
+			}
+			if (request === "previous" && delta < toleranceAmount * -1) {
+				return "current";
+			}
+			if (request === "next" && delta > toleranceAmount) {
+				return "current";
+			}
+			return request;
+		},
 		seek: function(direction) {
-			console.log(direction);
+			switch(direction) {
+				case "start": {
+					jad.lexicon.lookbook.scrollLeft = 0;
+					break;
+				}
+				case "previous": {
+					const previous = this.currentIntersection.previousElementSibling;
+					previous ? jad.lexicon.lookbook.scrollLeft = this.getScrollLeftFor(previous) : this.seek("start");
+					break;
+				}
+				case "current": {
+					const current = this.currentIntersection;
+					jad.lexicon.lookbook.scrollLeft = this.getScrollLeftFor(current);
+					break;
+				}
+				case "next": {
+					const next = this.currentIntersection.nextElementSibling;
+					next ? jad.lexicon.lookbook.scrollLeft = this.getScrollLeftFor(next) : this.seek("end");
+					break;
+				}
+				case "end": {
+					jad.lexicon.lookbook.scrollLeft = jad.lexicon.lookbook.scrollWidth - window.innerWidth;
+					break;
+				}
+				default: break;
+			}
+		},
+		getScrollLeftFor: function(target) {
+			return target.offsetLeft - (window.innerWidth / 2) + (target.offsetWidth / 2);
 		},
 	},
 
@@ -122,7 +196,7 @@ const jad = {
 		},
 		formatOEmbedQuery: function(service, url) {
 			const uri = encodeURIComponent(url)
-			switch (service) {
+			switch(service) {
 				case "youtube": return (`https://youtube.com/oembed?url=${uri}&format=json`);
 				case "vimeo": return (`https://vimeo.com/api/oembed.json?url=${uri}`);
 			}
@@ -137,6 +211,7 @@ const jad = {
 		createOEmbed: function(target, html) {
 			if (!html) { return; }
 			const div = document.createElement("div");
+			div.classList.add("oembed");
 			div.innerHTML = html;
 			this.modifyOEmbed(Array.from(div.children));
 			target.appendChild(div);
@@ -159,6 +234,39 @@ const jad = {
 			});
 		},
 	},
+
+	// scraping: {
+	// 	initScrapingScripts: function() {},
+	// 	scrape: async function(value) {
+	// 		// https://stackoverflow.com/questions/72916900/integrating-a-link-preview-image-scraper-into-link-and-tab-generation
+	// 		if (!value) { return }
+	// 		const response = await fetch(value)
+	// 		const text = await response.text()
+	// 		const scrape = function(target) {
+	// 			switch(target) {
+	// 				case "title": {
+	// 					const title = text.match(/<title>(.*?)<\/title>/)[1]
+	// 					return title
+	// 				}
+	// 				case "ogImage": {
+	// 					const tokens = text.split(" ")
+	// 					const ogImageIndex = (tokens.indexOf(`property="og:image"`) + 1)
+	// 					const ogImageUrl = tokens[ogImageIndex];
+	// 					if (ogImageUrl.match(/\"(.*?)\"/mg) !== null) {
+	// 						return ogImageUrl.match(/\"(.*?)\"/mg).toString()
+	// 					} else {
+	// 						return null
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 		const finds = {
+	// 			title: scrape("title"),
+	// 			image: scrape("ogImage"),
+	// 		}
+	// 		return finds.image
+	// 	},
+	// },
 
 }
 

@@ -147,7 +147,13 @@ module.exports = async function () {
 						}),
 					} | order(year desc, lower(title) asc),
 				},
-				// _type == "campaignBlock" => {}
+				_type == "pageBlock" => {
+					pages[] -> {
+						title,
+						"address": address.current,
+					},
+				},
+				// _type == "campaignBlock" => {},
 			},
 		},
 	}

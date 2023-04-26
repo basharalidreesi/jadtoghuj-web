@@ -1,5 +1,7 @@
+
 @charset "UTF-8";
 
+@use "sass:math";
 @import "_sass";
 
 html,
@@ -14,6 +16,7 @@ body {
 	font-style: normal;
 	line-height: 1.0;
 	overscroll-behavior: auto none;
+	scroll-behavior: smooth;
 }
 
 *,
@@ -114,7 +117,7 @@ body {
 		}
 	}
 	@media (any-hover: hover) {
-		background: linear-gradient(to bottom, var(--colour-background-top) 10%, var(--colour-background-bottom) 100%);
+		background: white linear-gradient(to bottom, var(--colour-background-top) 10%, var(--colour-background-bottom) 100%);
 		background-attachment: fixed;
 		background-size: 100% 100%;
 	}
@@ -127,7 +130,7 @@ body {
 			display: block;
 			height: 100vh;
 			width: 100%;
-			background: linear-gradient(to bottom, var(--colour-background-top) 10%, var(--colour-background-bottom) 100%);
+			background: white linear-gradient(to bottom, var(--colour-background-top) 10%, var(--colour-background-bottom) 100%);
 			background-repeat: no-repeat;
 			background-attachment: initial;
 			background-size: 100% 100%;
@@ -224,7 +227,7 @@ body {
 					left: 0;
 					width: 100%;
 					height: calc(100vh + 4.375rem);
-					background: linear-gradient(to bottom, var(--colour-background-top), var(--colour-background-bottom));
+					background: white linear-gradient(to bottom, var(--colour-background-top), var(--colour-background-bottom));
 					z-index: -1;
 				}
 			}
@@ -352,7 +355,7 @@ body {
 					text-decoration: underline;
 				}
 				svg {
-					transform: rotateX(180deg);
+					rotate: 180deg;
 				}
 			}
 			@media (any-hover: hover) {

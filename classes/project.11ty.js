@@ -34,8 +34,8 @@ const lookbook = (data, eleventy) => {
 	return (`
 		<figure ${options?.filter(Boolean).join(" ")}>
 			${data.project?.lookbook?.map(entry => lookbookSwitch(entry, eleventy)).join("")}
-			${lookbookControls(data)}
 		</figure>
+		${lookbookControlers(data)}
 	`)
 }
 
@@ -67,24 +67,27 @@ const videoEntry = (entry, eleventy) => {
 	}).replace(/^\t\t\t/mg, "\t".repeat(6))
 }
 
-const lookbookControls = (data) => {
+const lookbookControlers = (data) => {
 	if (!data.project?.lookbook) { return "" }
+	const _class = `class="lookbook-controlers"`
+	const hidden = `hidden="hidden"`
+	const options = [_class, data.project?.lookbook?.length <= 1 ? hidden : ""]
 	return (`
-		<div class="lookbook-controls">
-			<button class="left" data-direction="-1">
+		<div ${options?.filter(Boolean).join(" ")}>
+			<button class="left" data-direction="previous">
 				<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
 					<line x1="24" y1="12" x2="0" y2="12" />
 					<polyline points="8.49,3.51 0,12 8.49,20.49" />
 				</svg>
 			</button>
-			<button class="right" data-direction="1">
+			<button class="right" data-direction="next">
 				<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
 					<line x1="0" y1="12" x2="24" y2="12" />
 					<polyline points="15.51,20.49 24,12 15.51,3.51" />
 				</svg>
 			</button>
 		</div>
-	`).replace(/^\t\t/mg, "\t".repeat(6))
+	`).replace(/^\t\t/mg, "\t".repeat(5))
 }
 
 const projectInfo = (data, eleventy) => {

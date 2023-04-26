@@ -111,6 +111,7 @@
 
 @mixin floatingProject(
 	$background: null,
+	$opacity: null,
 ) {
 	width: fit-content;
 	max-width: 100%;
@@ -120,6 +121,9 @@
 		width: calc(100% + 2rem);
 		@if ($background != null) {
 			background: $background;
+		}
+		@if ($opacity != null) {
+			opacity: $opacity;
 		}
 	}
 }

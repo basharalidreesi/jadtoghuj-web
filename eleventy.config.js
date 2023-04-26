@@ -58,42 +58,43 @@ module.exports = function(eleventyConfig) {
 		`)
 	})
 
+	eleventyConfig.addJavaScriptFunction("globe", function(params = {}) {
+		const {
+			url = "",
+			title = "",
+			current = "",
+		} = params
+		if (!url || !title) { return }
+		const _class = `class="globe"`
+		const href = `href="${url}"`
+		const ariaCurrent = current.replaceAll("/", "") === url.replaceAll("/", "") ? `aria-current="page"` : ""
+		const options = [_class, href, ariaCurrent]
+		return(`
+			<a class="globe" ${options?.filter(Boolean)?.join(" ")}>
+				<div class="globe-background"></div>
+				<div class="globe-longitude">
+					${(`<div></div>`).repeat(5)}
+				</div>
+				<div class="globe-latitude">
+					${(`<div></div>`).repeat(5)}
+				</div>
+				<div class="globe-button">
+					<span class="globe-bubble">
+						<span>
+							${title}
+						</span>
+					</span>
+				</div>
+			</a>
+		`)
+	})
+
 	eleventyConfig.addJavaScriptFunction("svgFromUrl", async function(value) {
 		if (!value) { return }
 		return await fetch(value).then(async function (response) {
 			return response.text()
 		})
 	})
-
-	// eleventyConfig.addJavaScriptFunction("scrapeUrl", async function(value) {
-	// 	// https://stackoverflow.com/questions/72916900/integrating-a-link-preview-image-scraper-into-link-and-tab-generation
-	// 	if (!value) { return }
-	// 	const response = await fetch(value)
-	// 	const text = await response.text()
-	// 	const scrape = function(target) {
-	// 		switch(target) {
-	// 			case "title": {
-	// 				const title = text.match(/<title>(.*?)<\/title>/)[1]
-	// 				return title
-	// 			}
-	// 			case "ogImage": {
-	// 				const tokens = text.split(" ")
-	// 				const ogImageIndex = (tokens.indexOf(`property="og:image"`) + 1)
-	// 				const ogImageUrl = tokens[ogImageIndex];
-	// 				if (ogImageUrl.match(/\"(.*?)\"/mg) !== null) {
-	// 					return ogImageUrl.match(/\"(.*?)\"/mg).toString()
-	// 				} else {
-	// 					return null
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// 	const finds = {
-	// 		title: scrape("title"),
-	// 		image: scrape("ogImage"),
-	// 	}
-	// 	return finds.image
-	// })
 
 	eleventyConfig.addJavaScriptFunction("strip", function(value) {
 		if (!value) { return }

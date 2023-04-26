@@ -13,12 +13,20 @@
 			overflow-x: auto;
 			scroll-behavior: smooth;
 		}
+		// & {
+		// 	scrollbar-width: none;
+		// 	-ms-overflow-style: -ms-autohiding-scrollbar;
+		// }
+		// &::-webkit-scrollbar {
+		// 	-webkit-appearance: none;
+		// 	width: 0;
+		// 	height: 0;
+		// }
 		&[data-size="1"] {
-			.lookbook-controls {
-				display: none;
-			}
-			.lookbook-entry[data-type="video"] > div {
-				width: 100%;
+			.lookbook-entry[data-type="video"] {
+				.oembed {
+					width: calc(100% / 1.5);
+				}
 			}
 		}
 	}
@@ -49,7 +57,7 @@
 				padding-block-end: calc(2.375rem / 2 + 1rem);
 				background: var(--colour-background-bottom);
 			}
-			& > div {
+			.oembed {
 				position: relative;
 				width: calc((100% - (2 * 2.375rem) - 4rem) / 1.5);
 				height: fit-content;
@@ -57,7 +65,7 @@
 				max-width: calc((100svh - 7.25rem - 2.375rem - 2.375rem / 2 - 1rem) / 0.5625);
 				margin: auto;
 			}
-			& > div::before {
+			.oembed::before {
 				content: "";
 				display: block;
 				padding-block-start: calc(100% * 0.5625);
@@ -75,14 +83,14 @@
 					padding-block-start: 2.375rem;
 					padding-block-end: 0;
 				}
-				& > div {
-					width: 100%;
+				.oembed {
+					width: 100% !important;
 				}
 			}
 		}
 	}
 
-	.lookbook-controls {
+	.lookbook-controlers {
 		& {
 			position: fixed;
 			top: calc(50vh - (2.375rem / 2));
@@ -129,6 +137,9 @@
 				vector-effect: non-scaling-stroke;
 			}
 		}
+		&[hidden] {
+			display: none;
+		}
 	}
 
 	.project-info {
@@ -162,9 +173,10 @@
 			@include bubble(
 				$marginBlockStart: calc(2.375rem / -2),
 				$marginInline: auto,
-				$textColor: var(--colour-background-top),
-				$background: var(--colour-text),
-				$boxShadowColor: var(--colour-background-top),
+				$textColor: var(--colour-dominant-foreground),
+				$borderColor: var(--colour-dominant-foreground),
+				$background: var(--colour-dominant-background),
+				$boxShadowColor: var(--colour-dominant-background),
 				$truncate: true,
 			);
 			cursor: pointer;

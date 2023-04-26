@@ -1,21 +1,21 @@
 TODO
-[] create carousel indicators?
+[] create iframe placeholder
 [] add links to project info in project view such as embedding instagram posts (think more about this)
 [] think about adding other types of embeds in addition to youtube and vimeo such as spotify, soundcloud, instagram, tiktok
 [] create campaign blocks
 [] refine image blocks
 [] explore different logo possibilities
 [] make project title clickable in project view
-[] add seeking functionality to project view
 [] onvisibilitychange and idle time effects
 [] colour overrides for projects
 [] think about alternative design for nav subgroups
 [] refine sanityImage output (<source> in <picture> tags?)
 [] social media previews... sanity hotspots?
 [] deal with safari's weird grey boxes
+[] think about generated description concat
 
 DONE
-[x] study changing template language to 11ty js
+[x] change template language to 11ty js
 [x] figure out how to resolve promises
 [x] restrict lqip to only if not transparent in sanityImage
 [x] create look blocks
@@ -24,7 +24,10 @@ DONE
 [x] safe-area for project info
 [x] design layout for project info in project view
 [x] switch hasAlpha for isOpaques
-[x] think about generated description concat
 [x] think about having colour settings on the page level
 [x] think about enabling/disabling project tinting on the page level
 [x] create sitemap
+[x] add seeking functionality to project view
+[x] hide seekers when not needed
+[x] create carousel indicators?
+[x] add drag scrolling to lookbook

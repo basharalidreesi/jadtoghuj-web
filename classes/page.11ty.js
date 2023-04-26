@@ -36,7 +36,9 @@ const blocks = (data, eleventy) => {
 		const _class = `class="${eleventy.camelCaseToKebabCase(block?.type)}"`
 		const dataSize = block?.type === "projectBlock" || block?.type === "categoryBlock"
 			? `data-size="${block?.projects?.length || block?.looks?.length}"`
-			: ""
+			: block?.type === "pageBlock"
+				? `data-size="${block?.pages?.length}"`
+				: ""
 		const options = [_class, dataSize]
 		return (`
 			<div ${options?.filter(Boolean)?.join(" ")}>
@@ -53,6 +55,7 @@ const blockSwitch = (block, data, eleventy) => {
 		case "lookBlock": return lookBlock(block, data, eleventy)
 		case "projectBlock": return projectBlock(block, data, eleventy)
 		case "categoryBlock": return categoryBlock(block, data, eleventy)
+		case "pageBlock": return pageBlock(block, data, eleventy)
 		case "campaignBlock": return campaignBlock(block)
 		default: return ""
 	}
@@ -79,6 +82,24 @@ const projectBlock = (block, data, eleventy) => {
 
 const categoryBlock = (block, data, eleventy) => {
 	return renderProjects(block, data, eleventy)
+}
+
+const pageBlock = (block, data, eleventy) => {
+	if (!block?.pages) { return "" }
+	return block?.pages?.map(page => {
+		if (!page?.address || !page?.title) { return "" }
+		const _class = `class="page"`
+		const options = [_class]
+		return (`
+			<div ${options?.filter(Boolean)?.join(" ")}>
+				${eleventy.globe({
+					url: `${data.settings.baseUrl || ""}/${page.address}`,
+					title: page.title,
+					current: data.page.url,
+				})}
+			</div>
+		`)
+	}).join("")
 }
 
 const campaignBlock = (block) => {
