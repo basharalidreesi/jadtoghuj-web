@@ -7,11 +7,8 @@ TODO
 [] deal with safari's weird grey boxes
 [] think about generated description concat
 [] look info in lookbook
-[] repeated looks in category blocks
-
-IN PROGRESS
-[] create page blocks
-[] add links to project info in project view such as embedding instagram posts (think more about this)
+[] page blocks
+[] project references
 
 DONE
 [x] change template language to 11ty js
@@ -38,3 +35,4 @@ WONTFIX
 [x] create carousel indicators?
 [x] add drag scrolling to lookbook
 [x] create campaign blocks
+[x] repeated looks in category blocks

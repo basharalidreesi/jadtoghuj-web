@@ -117,11 +117,15 @@ module.exports = async function () {
 					hasCustomColour == true => {
 						colour,
 					},
-					"looks": array::compact(looks[]->image.asset -> {
-						_id in array::compact(^.^.^.^.^.content[].looks[]._ref) => {
+					"looks": array::compact(looks[] -> {
+						_id in array::compact(^.^.^.content[].looks[]._ref) => {
 							"isRepeated": true
 						},
-						${patterns.imageMetadata}
+						"": image {
+							asset -> {
+								${patterns.imageMetadata}
+							}
+						}.asset
 					}),
 				} | order(year desc, lower(title) asc),
 			},

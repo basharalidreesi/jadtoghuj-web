@@ -190,7 +190,6 @@ const ProjectBlock = (block, data, eleventy) => {
  * @returns {string} HTML markup for a category block.
  */
 const CategoryBlock = (block, data, eleventy) => {
-	console.log(block.projects[13].looks)
 	return Projects(block, data, eleventy)
 }
 
@@ -303,7 +302,10 @@ const Projects = (block, data, eleventy) => {
 		if (
 			!project?.image0?.url
 			&& !project?.video0?.url
-			&& project?.looks?.filter((look) => look?.url)?.length === project?.looks?.filter((look) => look?.isRepeated)?.length
+			&& (
+				project?.isRepeated
+				|| project?.looks?.filter((look) => look?.url)?.length === project?.looks?.filter((look) => look?.isRepeated)?.length
+			)
 		) { return "" }
 		// continue...
 		const Class = `class="project"`
@@ -313,7 +315,7 @@ const Projects = (block, data, eleventy) => {
 			!project?.isRepeated && project?.video0?.url ? "video" : "",
 			project?.isRepeated && project?.image1?.url ? "image" : "",
 			project?.isRepeated && project?.video1?.url ? "video" : "",
-			(project?.looks?.length > 1 || block?.type === "lookBlock") ? "looks" : "",
+			(project?.looks?.filter((look) => look?.url).length > 1 || block?.type === "lookBlock") ? "looks" : "",
 		]?.filter(Boolean)?.join(" ")}"`
 		const Style = () => {
 			if (!data.page?.doesAllowTinting) {
