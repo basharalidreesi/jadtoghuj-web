@@ -113,7 +113,8 @@ body {
 		}
 		.footer {
 			position: relative;
-			background: white linear-gradient(to bottom, var(--colour-background-bottom), var(--colour-background-bottom));
+			margin-block-start: -1px;
+			background: white linear-gradient(to bottom, var(--colour-dominant-background), var(--colour-background-bottom));
 		}
 	}
 	@media (any-hover: hover) {
@@ -474,5 +475,6 @@ body {
 	* {
 		animation: none !important;
 		transition: none !important;
+		scroll-behavior: auto !important;
 	}
 }

@@ -1,108 +1,78 @@
 const client = require("../sanity.client")
+const patterns = require("./patterns.js")
 
 module.exports = async function () {
-	const targetProjects = await client.fetch(`
-	array::compact(*[_type == "page" && website == "jadtoghuj.com" && defined(contents)] {
-		contents[] {
-			_type == "lookBlock" => {
-				"projects": project._ref
-			},
-			_type == "projectBlock" => {
-				"projects": projects[]._ref
-			},
-			_type == "categoryBlock" => {
-				"projects": *[_type == "project" && references(categories[]._ref) && isPublic == true && defined(lookbook[]) && defined(address.current)]._id,
-			},
-			// _type == "campaignBlock" => {},
-		}
-	}.contents[].projects[])
-	`, {})
-	const query = `
-	*[_type == "project" && _id in $targetProjects && isPublic == true && defined(lookbook[]) && defined(address.current)] {
-		title,
-		description[] {
-			_type == "block" => {
-				..., 
-				children[] {
-					...,
-					_type == "person" => {
-						...,
-						"name": @->.name,
-						"url": @->.url,
-					},
+	const targetProjects = await client.fetch((`
+		array::compact(*[_type == "page" && defined(content)] {
+			content[] {
+				_type == "lookBlock" => {
+					"projects": project._ref
 				},
-			},
-		},
-		year,
-		"address": address.current,
-		"categories": categories[]->title,
-		"contributions": contributors[] {
-			role,
-			persons[] -> {
-				name,
-				url,
-			},
-		},
-		looks[] -> {
-			"id": _id,
+				_type == "projectBlock" => {
+					"projects": projects[]._ref
+				},
+				_type == "categoryBlock" => {
+					"projects": *[_type == "project" && references(categories[]._ref) && ${patterns.projectFilters}]._id,
+				},
+			}
+		}.content[].projects[])
+	`), {})
+	const query = (`
+		*[_type == "project" && _id in $targetProjects && ${patterns.projectFilters}] {
 			title,
-			"image": image.asset -> {
-				url,
-				"height": metadata.dimensions.height,
-				"width": metadata.dimensions.width,
-				"isOpaque": metadata.isOpaque,
-				"lqip": metadata.lqip,
-				"palette": metadata.palette.dominant {
-					background,
-					foreground,
+			description[] {
+				${patterns.portableText}
+			},
+			year,
+			"address": address.current,
+			"categories": categories[]->title,
+			contributions[] {
+				contribution,
+				contributors[] -> {
+					name,
+					url,
 				},
 			},
-			description[] {
-				_type == "block" => {
-					..., 
-					children[] {
-						...,
-						_type == "person" => {
-							...,
-							"name": @->.name,
-							"url": @->.url,
+			looks[] -> {
+				title,
+				"image": image.asset -> {
+					${patterns.imageMetadata}
+				},
+				description[] {
+					${patterns.portableText}
+				},
+			},
+			lookbook[] {
+				defined(asset) || defined(url) => {
+					"type": _type,
+					_type == "image" => {
+						asset -> {
+							${patterns.imageMetadata}
 						},
 					},
-				},
+					_type == "video" => {
+						url,
+					},
+				}
 			},
-		},
-		lookbook[] {
-			"type": _type,
-			_type == "image" => {
-				asset -> {
-					url,
-					"height": metadata.dimensions.height,
-					"width": metadata.dimensions.width,
-					"isOpaque": metadata.isOpaque,
-					"lqip": metadata.lqip,
-				},
-			},
-			_type == "video" => {
+			references[] {
 				url,
+				title,
+				source,
 			},
-			"looks": looks[]._ref,
-		},
-		lookbook[0]._type == "image" => {
-			"image0": lookbook[0].asset-> {
-				url,
-				"palette": metadata.palette.dominant {
-					background,
-					foreground,
-				},
+			hasCustomColour,
+			hasCustomColour == true => {
+				colour,
 			},
-		},
-		lookbook[0]._type == "video" => {
-			"video0": lookbook[0] {
-				url,
+			hasCustomColour != true && defined(lookbook[0].asset) => {
+				"palette": lookbook[0] {
+					asset -> {
+						${patterns.imagePalette}
+					},
+				}.asset.palette,
 			},
-		},
-	}
-	`
+		}
+	`)
 	const params = {
 		targetProjects: targetProjects,
 	}

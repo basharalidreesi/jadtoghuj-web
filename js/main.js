@@ -3,24 +3,25 @@
 const jad = {
 
 	lexicon: {
-		// header
-		header: document.querySelector(".header"),
+		// nav
 		navButtons: document.querySelectorAll(".nav-expand"),
-		// lookbook
+		// projects
+		header: document.querySelector(".header"),
+		projectTitle: document.querySelector(`[data-layout="project"] .project-info .project-title`),
 		lookbook: document.querySelector(`[data-layout="project"] .project-lookbook`),
 		lookbookEntries: document.querySelectorAll(`[data-layout="project"] .lookbook-entry`),
 		lookbookControlers: document.querySelectorAll(`[data-layout="project"] .lookbook-controlers > *`),
-		projectTitle: document.querySelector(`[data-layout="project"] .project-info .project-title`),
-		// oEmbed
+		// oEmbeds
 		oEmbeds: document.querySelectorAll(`[data-oembed="true"]`),
-		// scraping
+		// scrapes
+		scrapes: document.querySelectorAll(`[data-scrape="true"]`),
 	},
 
 	initAllScripts: function() {
 		this.nav.initNavScripts();
-		this.lookbook.initLookbookScripts();
+		this.projects.initLookbookScripts();
 		this.oEmbeds.initOEmbedScripts();
-		// this.initScrapingScripts();
+		// this.scrapes.initScrapeScripts();
 	},
 
 	nav: {
@@ -58,21 +59,21 @@ const jad = {
 		},
 	},
 
-	lookbook: {
+	projects: {
 		initLookbookScripts: function() {
 			if (!jad.lexicon.lookbook) { return; }
-			this.enableProjectTitle();
+			this.enableTitle();
 			this.observeIntersections();
 			this.observeResizes();
 			this.enableControlers();
 		},
-		enableProjectTitle: function() {
+		enableTitle: function() {
 			jad.lexicon.projectTitle.addEventListener("click", () => {
 				const offsetTop = jad.lexicon.projectTitle.parentElement.offsetTop;
 				const offsetHeight = jad.lexicon.header.offsetHeight;
 				const padding = 16;
 				const scrollTop = offsetTop - offsetHeight - padding;
-				if (window.scrollY >= scrollTop) {
+				if (Math.round(window.scrollY) >= scrollTop) {
 					window.scrollTo(0, 0);
 					return;
 				}
@@ -118,7 +119,7 @@ const jad = {
 		},
 		resolveDirection: function(request) {
 			const toleranceAmount = 50;
-			const delta = jad.lookbook.currentIntersection.offsetLeft - jad.lexicon.lookbook.scrollLeft + (jad.lookbook.currentIntersection.offsetWidth / 2) - (window.innerWidth / 2);
+			const delta = this.currentIntersection.offsetLeft - jad.lexicon.lookbook.scrollLeft + (this.currentIntersection.offsetWidth / 2) - (window.innerWidth / 2);
 			if (request === "previous" && jad.lexicon.lookbook.scrollLeft <= toleranceAmount) {
 				return "end";
 			}
@@ -235,8 +236,8 @@ const jad = {
 		},
 	},
 
-	// scraping: {
-	// 	initScrapingScripts: function() {},
+	// scrapes: {
+	// 	initScrapeScripts: function() {},
 	// 	scrape: async function(value) {
 	// 		// https://stackoverflow.com/questions/72916900/integrating-a-link-preview-image-scraper-into-link-and-tab-generation
 	// 		if (!value) { return }

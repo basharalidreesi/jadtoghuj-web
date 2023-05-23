@@ -236,13 +236,13 @@
 			background: linear-gradient(to bottom, transparent, var(--colour-dominant-background));
 			z-index: -1;
 		}
-		&[data-contents="image"],
-		&[data-contents="video"] {
+		&[data-content="image"],
+		&[data-content="video"] {
 			& {
 				@include floatingProject();
 			}
 		}
-		&[data-contents="looks"] {
+		&[data-content="looks"] {
 			& {
 				@include floatingProject(
 					$background: radial-gradient(closest-side, var(--colour-dominant-background), transparent),
@@ -258,7 +258,7 @@
 				height: 30rem;
 			}
 		}
-		&[data-contents~="image"][data-contents~="looks"] {
+		&[data-content~="image"][data-content~="looks"] {
 			.project-looks {
 				margin-block-start: -10rem;
 			}

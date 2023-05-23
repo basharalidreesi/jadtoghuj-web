@@ -91,9 +91,12 @@ module.exports = function(eleventyConfig) {
 
 	eleventyConfig.addJavaScriptFunction("svgFromUrl", async function(value) {
 		if (!value) { return }
-		return await fetch(value).then(async function (response) {
-			return response.text()
-		})
+		try {
+			const data = await fetch(value).then((response) => response.text())
+			return eleventyConfig.getFilter("strip")(data)
+		} catch {
+			return null
+		}
 	})
 
 	eleventyConfig.addJavaScriptFunction("strip", function(value) {
@@ -122,6 +125,16 @@ module.exports = function(eleventyConfig) {
 		})?.filter(Boolean)?.join(" ")
 	})
 
+	eleventyConfig.addJavaScriptFunction("calculateForegroundColour", function(value) {
+		if (!value) { return }
+		// https://stackoverflow.com/a/41491220
+		var colour = (value.charAt(0) === "#") ? value.substring(1, 7) : value
+		var r = parseInt(colour.substring(0, 2), 16) // hexToR
+		var g = parseInt(colour.substring(2, 4), 16) // hexToG
+		var b = parseInt(colour.substring(4, 6), 16) // hexToB
+		return (((r * 0.299) + (g * 0.587) + (b * 0.114)) > 128) ? "#000000" : "#ffffff"
+	})
+
 	eleventyConfig.addJavaScriptFunction("portableTextToHtml", function(value) {
 		if (!value) { return }
 		return toHTML(value, {
@@ -130,14 +143,15 @@ module.exports = function(eleventyConfig) {
 					return `<p class="text" dir="auto">${props?.children.replace(/ (?=[^ ]*$)/i, "&nbsp;")}</p>`
 				},
 				types: {
-					person: ({value}) => {
-						const href = value.url || ""
-						if (value.url && uriLooksSafe(href)) {
-							const rel = href.startsWith("/") ? undefined : "noopener"
-							return `<span class="name"><a class="link" href="${href}" rel="${rel}" target="_blank">${value.name}</a></span>`
+					entity: ({value}) => {
+						const HRef = value.url || ""
+						if (value.url && uriLooksSafe(HRef)) {
+							const Rel = HRef.startsWith("/") ? undefined : "noopener"
+							return `<span class="entity"><a class="link" href="${HRef}" rel="${Rel}" target="_blank">${value.name}</a></span>`
 						}
-						return `<span class="name">${value.name}</span>`
+						return `<span class="entity">${value.name}</span>`
 					},
+					// project: ({value}) => { return "[REF]" }
 				},
 				marks: {
 					link: ({children, value}) => {

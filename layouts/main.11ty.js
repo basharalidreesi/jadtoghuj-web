@@ -5,53 +5,43 @@ class Main {
 			<!DOCTYPE html>
 			<html lang="en-GB" dir="auto">
 			<head>
-				<title>${title(data)}</title>
-				<meta name="description" content="${description(data, eleventy)}">
-				<meta name="theme-color" content="${themeColour(data)}">
+				<title>${[PageTitle(data), SiteTitle(data)].filter(Boolean).join(" • ")}</title>
+				<meta name="description" content="${Description(data, eleventy)}">
+				<meta name="theme-color" content="${ThemeColour(data)}">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0 viewport-fit=cover">
 				<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 				<meta name="generator" content="eleventy">
-				<link rel="canonical" href="${canonical(data)}">
-				<link rel="preload" href="${baseUrl(data)}/assets/css/main.css" as="style">
-				<link rel="preload" href="${baseUrl(data)}/assets/css/fonts.css" as="style">
-				<link rel="stylesheet" href="${baseUrl(data)}/assets/css/main.css" />
-				<link rel="stylesheet" href="${baseUrl(data)}/assets/css/fonts.css" />
+				<link rel="canonical" href="${Canon(data)}">
+				<link rel="preload" href="${"/" + BasePath(data) + "assets/css/main.css"}" as="style">
+				<link rel="preload" href="${"/" + BasePath(data) + "assets/css/fonts.css"}" as="style">
+				<link rel="stylesheet" href="${"/" + BasePath(data) + "assets/css/main.css"}" />
+				<link rel="stylesheet" href="${"/" + BasePath(data) + "assets/css/fonts.css"}" />
 				<meta property="og:type" content="website">
-				<meta property="og:title" content="${title(data)}">
-				<meta property="og:site_name" content="${siteName(data)}">
-				<meta property="og:description" content="${description(data, eleventy)}">
-				<meta property="og:url" content="${canonical(data)}">
+				<meta property="og:title" content="${PageTitle(data) || SiteTitle(data)}">
+				<meta property="og:site_name" content="${SiteTitle(data)}">
+				<meta property="og:description" content="${Description(data, eleventy)}">
+				<meta property="og:url" content="${Canon(data)}">
 				<!-- <meta property="og:image" content=""> -->
 				<meta property="twitter:card" content="summary_large_image">
-				<meta property="twitter:title" content="${title(data)}">
-				<meta property="twitter:description" content="${description(data, eleventy)}">
-				<meta property="twitter:url" content="${canonical(data)}">
+				<meta property="twitter:title" content="${PageTitle(data) || SiteTitle(data)}">
+				<meta property="twitter:description" content="${Description(data, eleventy)}">
+				<meta property="twitter:url" content="${Canon(data)}">
 				<!-- <meta property="twitter:image" content=""> -->
-				<script defer src="${baseUrl(data)}/assets/js/main.js"></script>
-				${analytics(data)}
-				${colours(data, eleventy)}
+				<script defer src="${"/" + BasePath(data) + "assets/js/main.js"}"></script>
+				${Analytics(data)}
+				${Style(data, eleventy)}
 			</head>
-			<body ${bodyOptions(data, eleventy)}>
+			<body ${BodyOptions(data, eleventy)}>
 				<header class="header">
-					<div class="logo">
-						<a href="${baseUrl(data)}/">
-							${eleventy.strip(await logo(data, eleventy))}
-						</a>
-					</div>
-					<button id="nav-button" class="nav-expand" aria-controls="nav-menu" aria-haspopup="true" aria-expanded="false">
-						<span>Menu</span>
-						${eleventy.strip(navButton)}
-					</button>
-					<nav id="nav-menu" class="nav" aria-role="menu" aria-labelledby="nav-button">
-						${nav(data, eleventy)}
-					</nav>
+					${await Logo(data, eleventy)}
+					${Nav(data)}
 				</header>
 				<main class="main">
-					${content(data)}
+					${Content(data)}
 				</main>
 				<footer class="footer">
 					<!-- last built ${new Date()} -->
-					${footer(data, eleventy)}
+					${Footer(data, eleventy)}
 				</footer>
 			</body>
 			</html>
@@ -59,65 +49,104 @@ class Main {
 	}
 }
 
-const title = (data) => {
-	const pageTitle = data.page?.url === "/" ? "" : data.page?.title
+const PageTitle = (data) => {
+	if (data.page?.url === "/") { return "" }
+	const pageTitle = data.page?.title
 	const projectTitle = data.project?.title
 	const siteTitle = data.settings?.title || ""
-	return [pageTitle || projectTitle, siteTitle]?.filter(Boolean)?.join(" • ")
+	return pageTitle || projectTitle || siteTitle || ""
 }
 
-const description = (data, eleventy) => {
+const SiteTitle = (data) => {
+	return data.settings?.title || ""
+}
+
+const Description = (data, eleventy) => {
 	const pageDescription = eleventy.portableTextToPlainText(data.page?.description) || ""
 	const projectDescription = eleventy.portableTextToPlainText(data.project?.description) || ""
 	const siteDescription = data.settings?.description || ""
 	return [pageDescription || projectDescription, siteDescription]?.filter(Boolean)?.join(" ✦ ")
 }
 
-const themeColour = (data) => {
-	return data.settings?.colours?.top || ""
+const ThemeColour = (data) => {
+	return data.settings?.colours?.top || "#ffffff"
 }
 
-const canonical = (data) => {
-	const url = data.settings?.url
-	const baseUrl = data.settings?.baseUrl
-	const pageUrl = data.page?.url
-	return [url, baseUrl, pageUrl]?.filter(Boolean)?.join("")
+const Canon = (data) => {
+	const currentUrl = data.page?.url
+	const basePath = data.settings?.basePath
+	const siteUrl = data.settings?.url?.replace(/\/$/, "")
+	return [siteUrl, basePath, currentUrl]?.filter(Boolean)?.join("")
 }
 
-const baseUrl = (data) => {
+const BasePath = (data) => {
 	return data.settings?.baseUrl || ""
 }
 
-const siteName = (data) => {
-	return data.settings?.title || ""
-}
-
-const analytics = (data) => {
+const Analytics = (data) => {
 	return data.settings?.analytics || ""
 }
 
-const colours = (data, eleventy) => {
-	const style = {
-		"--colour-1": data.settings?.colours?.text,
-		"--colour-2": data.settings?.colours?.top,
-		"--colour-3": data.settings?.colours?.bottom,
+const Style = (data, eleventy) => {
+	const Colours = () => {
+		if (data.settings?.colours?.text && data.settings?.colours?.top && data.settings?.colours?.bottom) {
+			return {
+				"--colour-1": data.settings?.colours?.text,
+				"--colour-2": data.settings?.colours?.top,
+				"--colour-3": data.settings?.colours?.bottom,
+			}
+		}
+		return {
+			"--colour-1": "#000000",
+			"--colour-2": "#ffffff",
+			"--colour-3": "#ffffff",
+		}
 	}
-	return `<style> :root { ${eleventy.formatCss(style)} } </style>`
+	return (`<style> :root { ${eleventy.formatCss(Colours())} } </style>`)
 }
 
-const bodyOptions = (data, eleventy) => {
-	const style = {
-		"--colour-dominant-background": `${data.project?.image0?.palette?.background}`,
-		"--colour-dominant-foreground": `${data.project?.image0?.palette?.foreground}`,
-		"--colour-background-bottom": `${data.project?.image0?.palette?.background}80`,
+const BodyOptions = (data, eleventy) => {
+	const Style = () => {
+		const hexTransparency = "80"
+		if (data.page?.fileSlug.toLowerCase() === "page") {
+			if (
+				data.page?.hasCustomColours
+				&& data.page?.colours?.top
+				&& data.page?.colours?.bottom
+				&& data.page?.colours?.text
+			) {
+				return `style="${eleventy.formatCss({
+					"--colour-text": data.page?.colours?.text,
+					"--colour-background-top":  data.page?.colours?.top,
+					"--colour-background-bottom": data.page?.colours?.bottom,
+				})}"`
+			}
+		}
+		if (data.page?.fileSlug.toLowerCase() === "project") {
+			if (data.project?.hasCustomColour && data.project?.colour) {
+				return `style="${eleventy.formatCss({
+					"--colour-dominant-background": data.project?.colour + hexTransparency,
+					"--colour-dominant-foreground":  eleventy.calculateForegroundColour(data.project?.colour),
+					"--colour-background-bottom": data.project?.colour,
+				})}"`
+			}
+			if (!data.project?.hasCustomColour && data.project?.palette?.background && data.project?.palette?.foreground) {
+				return `style="${eleventy.formatCss({
+					"--colour-dominant-background": data.project?.palette?.background + hexTransparency,
+					"--colour-dominant-foreground":  data.project?.palette?.foreground,
+					"--colour-background-bottom": data.project?.palette?.background,
+				})}"`
+			}
+		}
+		return ""
 	}
-	const dataLayout = `data-layout="${data.page?.fileSlug}"`
-	const options = [data.page?.fileSlug === "project" && data.project?.image0?.url ? `style="${eleventy.formatCss(style)}"` : "", dataLayout]
+	const Layout = `data-layout="${data.page?.fileSlug?.toLowerCase()}"`
+	const options = [Style(), Layout]
 	return options?.filter(Boolean)?.join(" ")
 }
 
-const logo = (data, eleventy) => {
-	const defaultLogo = (`
+const Logo = async (data, eleventy) => {
+	const FallbackLogo = (`
 		<svg width="508.02" height="150" viewBox="0 0 508.02 150" xmlns="http://www.w3.org/2000/svg">
 			<g>
 				<path d="M72.83,28.11h0.94c2.64-7.36,10.94-13.02,17.36-13.77V13.4C84.91,13.02,79.62,6.6,80.38,0h-0.94 c-2.45,6.79-10,12.64-17.36,12.83v0.94C69.06,14.34,73.4,21.32,72.83,28.11z"></path>
@@ -128,73 +157,145 @@ const logo = (data, eleventy) => {
 				<path d="M468.96,35.47c7.74,0.94,12.26,4.72,12.26,14.72c0,11.32-6.04,32.64-18.49,32.64c-7.18,0-10.38-6.95-9.5-14.83 c0.92-2.44,1.76-4.75,2.52-6.87H455h-5.28h-0.76c-0.77,2.13-1.48,4.3-2.16,6.51c-3.23,5.76-7.73,10.09-12.75,10.09 c-4.34,0-7.74-2.26-7.74-9.25c0-11.13,8.3-27.55,13.96-33.96H416.7v0.94c4.91,0,6.98,2.83,6.98,9.06 c0,14.15-10.19,33.77-21.13,33.77c-4.34,0-7.55-3.02-7.55-10.94c0-12.26,7.55-27.55,13.4-32.83h-22.08v0.94 c9.25,0,7.92,7.74,1.32,25.66c-0.02,0.06-0.04,0.12-0.06,0.17c-3.04,8.61-8.85,16.43-15.6,16.43c-3.96,0-6.98-2.83-6.98-8.11 c0-7.92,5.28-18.11,5.28-26.6c0-6.6-3.96-10.75-11.13-10.75c-9.43,0-16.79,7.17-20.57,12.64h-0.38 c4.91-14.15,13.21-33.77,19.25-42.45h-28.68v0.75c13.33,0,11,14.94,5.11,33.02c-0.67,0.14-1.34,0.19-2.09,0.19 c-6.23,0-12.64-4.15-20.38-4.15c-12.32,0-20.95,11.27-27.34,28.32c2.25-16.18-0.56-28.51-13.98-28.51 c-12.64,0-20.75,11.13-27.36,29.06c-3.02,8.68-8.87,16.6-15.66,16.6c-6.04,0-10.75-3.02-10.75-12.08c0-6.98,2.08-14.53,5.28-22.83 h13.96l3.21-8.3h-13.96l6.04-15.09h-1.13c-8.3,9.81-15.66,15.28-26.79,22.45v0.94h11.32c-1.7,5.09-3.96,11.51-6.41,18.3 c-11.51,32.26-19.25,70.75-0.57,70.75c7.62,0,16.91-14.37,25.13-31.24c-2.24,17.58,0.6,31.24,14.12,31.24 c12.64,0,20-15.28,27.55-35.28c1.16-3.06,2.27-6.18,3.32-9.31c-1.23,11.86,1.04,21.77,11.59,21.77c7.17,0,11.7-4.53,17.17-12.26 c-3.02,9.81-8.87,18.49-19.62,18.49c-5.85,0-10-2.64-11.7-6.23h-0.38c-3.02,13.58-10.75,30.57-22.45,38.87v0.38 c5.47,1.32,11.32,1.7,15.66,1.7c22.26,0,33.58-9.25,41.7-31.89c1.87-5.2,3.5-12.03,5.3-19.7c-3.47,19.5-2.07,33.48,6.21,33.48 c13.58,0,10.75-24.34,25.85-64.15h-0.94c-1.51,3.02-5.09,10.19-9.81,10.19c-3.58,0-4.53-3.02-4.53-6.23 c0-10.94,10.75-30.19,22.83-30.19c4.34,0,6.6,2.64,6.6,7.17c0,13.4-18.49,46.41-18.49,68.87c0,8.68,2.64,14.34,9.81,14.34 c7.34,0,16.23-13.34,24.22-29.4c-2.6,17.03-0.96,29.21,7.28,29.21c10.94,0,20-19.62,26.23-34.91c-4.15,17.74-5.66,35.09,4.34,35.09 c6.95,0,15.3-11.97,22.95-26.89c-4.3,16.16-9.79,31.61-20.31,43.11v0.19c4.72,1.32,9.81,1.7,13.77,1.7 c22.08,0,32.64-9.25,41.13-31.51c6.79-17.92,14.53-56.04,18.11-67.36c2.83-9.06,5.47-15.47,10.94-15.66v-0.94h-31.89V35.47z M261.23,77.74c-5.66,0-9.62-4.72-9.62-12.64c0-10.75,7.17-25.85,17.36-25.85c5.09,0,8.49,4.15,8.49,11.32 C277.45,61.89,271.98,77.74,261.23,77.74z M299.15,78.3c-3.96,0-6.6-3.21-6.6-8.87c0-10.57,9.43-30,20.57-30 c4.34,0,6.41,3.02,6.41,7.92C319.53,58.11,308.96,78.3,299.15,78.3z"></path>
 			</g>
 		</svg>
-	`)
-	return data.settings?.logo?.url ? eleventy.svgFromUrl(data.settings?.logo?.url) : defaultLogo
+	`).replace(/^\t\t/mg, "\t".repeat(4))
+	const Class = `class="logo"`
+	const Options = [Class]
+	return (`
+		<div ${Options?.filter(Boolean)?.join(" ")}>
+			<a href="${"/" + BasePath(data)}">
+				${data.settings?.logo?.url ? await eleventy.svgFromUrl(data.settings?.logo?.url) : FallbackLogo}
+			</a>
+		</div>
+	`).replace(/^\t\t/mg, "\t".repeat(5))
 }
 
-const navButton = `
-	<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-		<line x1="0" y1="0" x2="24" y2="0" />
-		<line x1="0" y1="12" x2="24" y2="12" />
-		<line x1="0" y1="24" x2="24" y2="24" />
-	</svg>
-`
-
-const navExpand = `
-	<svg width="24" height="12" viewBox="0 0 24 12" xmlns="http://www.w3.org/2000/svg">
-		<polygon points="24,0 12,12 0,0" />
-	</svg>
-`
-
-const nav = (data, eleventy) => {
-	const navLink = (page, isSubgroup = false) => {
-		const { type, address, title } = page
-		const _class = isSubgroup ? `class="nav-sublink"` : `class="nav-link"`
-		const href = type === "page" ? `href="${(baseUrl(data) + "/" + address.replaceAll("/", "") + "/").replace("//", "/")}"` : (type === "external" ? `href="${address}"` : "")
-		const rel = type === "external" ? `rel="noopener"` : ""
-		const target = type === "external" ? `target="_blank"` : ""
-		const ariaCurrent = data.page?.url?.replaceAll("/", "") === address.replaceAll("/", "") ? `aria-current="page"` : ""
-		const ariaRole = isSubgroup ? `aria-role="menuitem"` : ""
-		const options = [_class, href, rel, target, ariaCurrent, ariaRole]
+const Nav = (data) => {
+	// guard against undefined
+	if (!data.settings?.navigation || !data.settings?.navigation?.length === 0) { return "" }
+	// continue...
+	const NavGroup = (group, index) => {
+		// guard against empty groups and groups with no pages
+		if (!group?.members || group?.members?.length === 0 || group?.members?.filter((member) => member.type === "page")?.length === 0) { return "" }
+		// continue...
+		const indexOfSeparator = group?.members.findIndex((member) => member?.type === "separator")
+		const GroupClass = `class="nav-group"`
+		const GroupOptions = [GroupClass]
+		if (indexOfSeparator === -1) {
+			return (`
+				<div ${GroupOptions?.filter(Boolean)?.join(" ")}>
+					${group?.members?.map((member) => NavPage(member, { isWithinASubgroup: false }))?.join("")}
+				</div>
+			`).replace(/^\t\t\t/mg, "\t".repeat(2))
+		}
+		if (indexOfSeparator > -1) {
+			const MemberClass = `class="nav-link"`
+			const MemberOptions = [MemberClass]
+			const ButtonId = `id="group-${index}-button"`
+			const ButtonClass = `class="nav-expand"`
+			const ButtonAriaControls = `aria-controls="group-${index}-menu"`
+			const ButtonAriaHasPopup = `aria-haspopup="true"`
+			const ButtonAriaExpanded = `aria-expanded="false"`
+			const ButtonOptions = [ButtonId, ButtonClass, ButtonAriaControls, ButtonAriaHasPopup, ButtonAriaExpanded]
+			const SubgroupId = `id="group-${index}-menu"`
+			const SubgroupClass = `class="nav-subgroup"`
+			const SubgroupAriaRole = `aria-role="menu"`
+			const SubgroupAriaLabelledBy = `aria-labelledby="group-${index}-button"`
+			const SubgroupOptions = [SubgroupId, SubgroupClass, SubgroupAriaRole, SubgroupAriaLabelledBy]
+			return (`
+				<div ${GroupOptions?.filter(Boolean)?.join(" ")}>
+					${group?.members?.slice(0, indexOfSeparator)?.map((member) => NavPage(member, { isWithinASubgroup: false }))?.join("")}
+					${group?.members?.length - 1 !== indexOfSeparator
+						? (`
+							<div ${MemberOptions?.filter(Boolean).join(" ")}>
+								<button ${ButtonOptions?.filter(Boolean)?.join(" ")}>
+									<span>
+										${group?.members[indexOfSeparator]?.label || "Menu"}
+									</span>
+									<svg width="24" height="12" viewBox="0 0 24 12" xmlns="http://www.w3.org/2000/svg">
+										<polygon points="24,0 12,12 0,0" />
+									</svg>
+								</button>
+								<div ${SubgroupOptions?.filter(Boolean).join(" ")}>
+									${group?.members?.slice(indexOfSeparator, group?.members?.length)?.map((member) => NavPage(member, { isWithinASubgroup: true }))?.join("")}
+								</div>
+							</div>
+						`).replace(/^\t\t\t/mg, "\t".repeat(1))
+						: ""
+					}
+				</div>
+			`).replace(/^\t\t\t/mg, "\t".repeat(2))
+		}
+	}
+	const NavPage = (member, params = {}) => {
+		const {
+			isWithinASubgroup = false,
+		} = params
+		// guard against members that are not pages or members without a title or an address
+		if (member?.type !== "page" || !member?.title || !member?.address) { return "" }
+		// continue...
+		const Class = isWithinASubgroup ? `class="nav-sublink"` : `class="nav-link"`
+		const Href = () => {
+			if (member?.address === "/") {
+				return `href="${"/" + BasePath(data)}"`
+			}
+			return `href="${"/" + BasePath(data) + member?.address + "/"}"`
+		}
+		const AriaCurrent = () => {
+			if (
+				(data.page?.url === "/" && member?.address === "/")
+				|| (data.page?.url?.replaceAll("/", "") === member?.address)
+				) {
+				return `aria-current="page"`
+			}
+			return ""
+		}
+		const AriaRole = isWithinASubgroup ? `aria-role="menuitem"` : ""
+		const Options = [Class, Href(), AriaCurrent(), AriaRole]
 		return (`
-			<a ${options?.filter(Boolean)?.join(" ")}>
+			<a ${Options?.filter(Boolean)?.join(" ")}>
 				<span>
-					${title}
+					${member?.title}
 				</span>
 			</a>
-		`).replace(/^\t\t\t/mg, "\t".repeat(4))
+		`).replace(/^\t\t\t/mg, "\t".repeat(isWithinASubgroup ? 9 : 5))
 	}
-	return data.settings?.navigation?.groups?.map((group, index) => {
-		const isTruncated = group.truncation?.isTruncated && group.pages?.length > group.truncation?.limit
-		const limit = isTruncated ? group.truncation?.limit : group.pages?.length
-		return (`
-			<div class="nav-group">
-				${group.pages?.slice(0, limit)?.map(page => { return navLink(page, false) })?.join("")}
-				${isTruncated
-					? (`
-						<div class="nav-link">
-							<button id="group-${index}-button" class="nav-expand" aria-controls="group-${index}-menu" aria-haspopup="true" aria-expanded="false">
-								<span>
-									${ group.truncation?.label || "Menu" }
-								</span>
-								${eleventy.strip(navExpand)}
-							</button>
-							<div id="group-${index}-menu" class="nav-subgroup" aria-role="menu" aria-labelledby="group-${index}-button">
-								${group.pages?.slice(limit, group.pages?.length)?.map(page => { return navLink(page, true) })?.join("").replace(/^\t\t\t/mg, "\t".repeat(7))}
-							</div>
-						</div>
-					`).replace(/^\t\t\t/mg, "\t".repeat(1))
-					: ""}
-			</div>
-		`).replace(/^\t\t\t/mg, "\t".repeat(6))
-	})?.join("")
+	const ButtonId = `id="nav-button"`
+	const ButtonClass = `class="nav-expand"`
+	const ButtonAriaControls = `aria-controls="nav-menu"`
+	const ButtonAriaHasPopup = `aria-haspopup="true"`
+	const ButtonAriaExpanded = `aria-expanded="false"`
+	const ButtonOptions = [ButtonId, ButtonClass, ButtonAriaControls, ButtonAriaHasPopup, ButtonAriaExpanded]
+	const NavId = `id="nav-menu"`
+	const NavClass = `class="nav"`
+	const NavAriaRole = `aria-role="menu"`
+	const NavAriaLabelledBy = `aria-labelledby="nav-button"`
+	const NavOptions = [NavId, NavClass, NavAriaRole, NavAriaLabelledBy]
+	return (`
+		<button ${ButtonOptions?.filter(Boolean)?.join(" ")}>
+			<span>Menu</span>
+			<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+				<line x1="0" y1="0" x2="24" y2="0" />
+				<line x1="0" y1="12" x2="24" y2="12" />
+				<line x1="0" y1="24" x2="24" y2="24" />
+			</svg>
+		</button>
+		<nav ${NavOptions?.filter(Boolean)?.join(" ")}>
+			${data.settings?.navigation?.map((group, index) => NavGroup(group, index))?.join("")}
+		</nav>
+	`).replace(/^\t\t/mg, "\t".repeat(5))
 }
 
-const content = (data) => {
+const Content = (data) => {
+	// guard against undefined
+	if (!data.content) { return "" }
+	// continue...
 	return data.content
 }
 
-const footer = (data, eleventy) => {
+const Footer = (data, eleventy) => {
+	// guard against undefined
+	if (!data.settings?.footer || data.settings?.footer?.length === 0) { return "" }
+	// continue...
 	return eleventy.portableTextToHtml(data.settings?.footer)
 }
 

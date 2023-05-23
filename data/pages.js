@@ -1,132 +1,69 @@
 const client = require("../sanity.client")
+const patterns = require("./patterns.js")
 
 module.exports = async function () {
-	const query = `
-	*[_type == "page" && website == "jadtoghuj.com"] {
+	const query = (`
+	*[_type == "page"] {
 		title,
 		"address": address.current,
-		defined(contents) => {
-			contents[] {
-				"type": _type,
-				_type == "textBlock" => {
-					text[] {
-						_type == "block" => {
-							..., 
-							children[] {
-								...,
-								_type == "person" => {
-									...,
-									"name": @->.name,
-									"url": @->.url,
-								},
-							},
-						},
-					},
+		content[] {
+			"type": _type,
+			_type == "textBlock" => {
+				text[] {
+					${patterns.portableText}
 				},
-				_type == "imageBlock" => {
-					"image": asset -> {
-						url,
-						"height": metadata.dimensions.height,
-						"width": metadata.dimensions.width,
-						"isOpaque": metadata.isOpaque,
-						"lqip": metadata.lqip,
-					},
+			},
+			_type == "imageBlock" => {
+				"image": asset -> {
+					${patterns.imageMetadata}
 				},
-				_type == "lookBlock" => {
-					"projects": [project -> {
-						(isPublic == true && defined(address.current)) => {
-							title,
-							"address": address.current,
-							lookbook[0]._type == "image" => {
-								"image0": lookbook[0].asset -> {
-									"palette": metadata.palette.dominant {
-										background,
-										foreground,
-									},
-								},
-							},
-							"looks": array::compact(^.looks[]->image.asset -> {
-								url,
-								"height": metadata.dimensions.height,
-								"width": metadata.dimensions.width,
-								"isOpaque": metadata.isOpaque,
-								"lqip": metadata.lqip,
-							}),
-						},
-					}],
+			},
+			_type == "pageBlock" => {
+				pages[] -> {
+					title,
+					"address": address.current,
 				},
-				_type == "projectBlock" => {
-					"projects": projects[] -> {
-						(isPublic == true && defined(address.current)) => {
-							title,
-							"address": address.current,
-							lookbook[0]._type == "image" => {
-								"image0": lookbook[0].asset -> {
-									url,
-									"height": metadata.dimensions.height,
-									"width": metadata.dimensions.width,
-									"isOpaque": metadata.isOpaque,
-									"lqip": metadata.lqip,
-									"palette": metadata.palette.dominant {
-										background,
-										foreground,
-									},
-								},
-							},
-							lookbook[0]._type == "video" => {
-								"video0": lookbook[0] {
-									url,
-								},
-							},
-							"looks": array::compact(looks[] -> {
-								_id in array::compact(^.^.^.contents[].looks[]._ref) => {
-									"isRepeated": true
-								},
-								"url": image.asset->url,
-								"height": image.asset->metadata.dimensions.height,
-								"width": image.asset->metadata.dimensions.width,
-								"isOpaque": image.asset->metadata.isOpaque,
-								"lqip": image.asset->metadata.lqip,
-							}),
-						},
-					},
-				},
-				_type == "categoryBlock" => {
-					"projects": *[_type == "project" && references(^.categories[]._ref) && isPublic == true && defined(address.current)] {
-						_id in array::compact(^.^.contents[].projects[]._ref) => {
-							"isRepeated": true,
-							lookbook[1]._type == "image" => {
-								"image1": lookbook[1].asset -> {
-									url,
-									"height": metadata.dimensions.height,
-									"width": metadata.dimensions.width,
-									"isOpaque": metadata.isOpaque,
-									"lqip": metadata.lqip,
-									"palette": metadata.palette.dominant {
-										background,
-										foreground,
-									},
-								},
-							},
-							lookbook[1]._type == "video" => {
-								"video1": lookbook[1] {
-									url,
-								},
-							},
-						},
+			},
+			_type == "lookBlock" => {
+				"projects": [project -> {
+					${patterns.projectFilters} => {
 						title,
-						year,
 						"address": address.current,
+						"looks": array::compact(^.looks[]->image.asset -> {
+							${patterns.imageMetadata}
+						}),
+						hasCustomColour,
+						hasCustomColour == true => {
+							colour,
+						},
+						hasCustomColour != true && lookbook[0]._type == "image" => {
+							"image0": lookbook[0].asset -> {
+								${patterns.imagePalette}
+							},
+						},
+					},
+				}],
+			},
+			_type == "projectBlock" => {
+				"projects": projects[] -> {
+					${patterns.projectFilters} => {
+						title,
+						"address": address.current,
+						"looks": array::compact(looks[] -> {
+							_id in array::compact(^.^.^.content[].looks[]._ref) => {
+								"isRepeated": true
+							},
+							"": image {
+								asset -> {
+									${patterns.imageMetadata}
+								}
+							}.asset
+						}),
 						lookbook[0]._type == "image" => {
 							"image0": lookbook[0].asset -> {
-								url,
-								"height": metadata.dimensions.height,
-								"width": metadata.dimensions.width,
-								"isOpaque": metadata.isOpaque,
-								"lqip": metadata.lqip,
-								"palette": metadata.palette.dominant {
-									background,
-									foreground,
+								${patterns.imageMetadata}
+								^.hasCustomColour != true => {
+									${patterns.imagePalette}
 								},
 							},
 						},
@@ -135,29 +72,67 @@ module.exports = async function () {
 								url,
 							},
 						},
-						"looks": array::compact(looks[] -> {
-							_id in array::compact(^.^.^.contents[].looks[]._ref) => {
-								"isRepeated": true
-							},
-							"url": image.asset->url,
-							"height": image.asset->metadata.dimensions.height,
-							"width": image.asset->metadata.dimensions.width,
-							"isOpaque": image.asset->metadata.isOpaque,
-							"lqip": image.asset->metadata.lqip,
-						}),
-					} | order(year desc, lower(title) asc),
-				},
-				_type == "pageBlock" => {
-					pages[] -> {
-						title,
-						"address": address.current,
+						hasCustomColour,
+						hasCustomColour == true => {
+							colour,
+						},
 					},
 				},
-				// _type == "campaignBlock" => {},
+			},
+			_type == "categoryBlock" => {
+				"projects": *[_type == "project" && references(^.categories[]._ref) && ${patterns.projectFilters}] {
+					_id in array::compact(^.^.content[].projects[]._ref) => {
+						"isRepeated": true,
+						lookbook[1]._type == "image" => {
+							"image1": lookbook[1].asset -> {
+								${patterns.imageMetadata}
+								^.hasCustomColour != true => {
+									${patterns.imagePalette}
+								},
+							},
+						},
+						lookbook[1]._type == "video" => {
+							"video1": lookbook[1] {
+								url,
+							},
+						},
+					},
+					title,
+					year,
+					"address": address.current,
+					lookbook[0]._type == "image" => {
+						"image0": lookbook[0].asset -> {
+							${patterns.imageMetadata}
+							^.hasCustomColour != true => {
+								${patterns.imagePalette}
+							},
+						},
+					},
+					lookbook[0]._type == "video" => {
+						"video0": lookbook[0] {
+							url,
+						},
+					},
+					hasCustomColour,
+					hasCustomColour == true => {
+						colour,
+					},
+					"looks": array::compact(looks[]->image.asset -> {
+						_id in array::compact(^.^.^.^.^.content[].looks[]._ref) => {
+							"isRepeated": true
+						},
+						${patterns.imageMetadata}
+					}),
+				} | order(year desc, lower(title) asc),
 			},
 		},
+		hasCustomColours,
+		hasCustomColours == true => {
+			${patterns.gradient}
+		},
+		doesAllowTinting,
 	}
-	`
+	`)
 	const params = {}
 	return await client.fetch(query, params)
 }
