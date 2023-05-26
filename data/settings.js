@@ -17,7 +17,13 @@ module.exports = async function () {
 					"type": _type,
 					_type == "page" => @-> {
 						title,
-						"address": address.current,
+						target,
+						target == "internal" => {
+							"address": address.current,
+						},
+						target == "external" => {
+							url,
+						},
 					},
 					_type == "separator" => {
 						label,

@@ -3,11 +3,12 @@ const patterns = require("./patterns.js")
 
 module.exports = async function () {
 	const query = (`
-	*[_type == "page"] {
+	*[_type == "page" && target == "internal"] {
 		title,
 		"address": address.current,
 		content[] {
 			"type": _type,
+			"key": _key,
 			_type == "textBlock" => {
 				text[] {
 					${patterns.portableText}
@@ -18,6 +19,14 @@ module.exports = async function () {
 					${patterns.imageMetadata}
 				},
 			},
+			_type == "pressBlock" => {
+				press[] -> {
+					${patterns.press}
+					"image": image.asset -> {
+						${patterns.imageMetadata}
+					},
+				}
+			},
 			_type == "pageBlock" => {
 				pages[] -> {
 					title,
@@ -27,6 +36,7 @@ module.exports = async function () {
 			_type == "lookBlock" => {
 				"projects": [project -> {
 					${patterns.projectFilters} => {
+						"id": _id,
 						title,
 						"address": address.current,
 						"looks": array::compact(^.looks[]->image.asset -> {
@@ -47,6 +57,7 @@ module.exports = async function () {
 			_type == "projectBlock" => {
 				"projects": projects[] -> {
 					${patterns.projectFilters} => {
+						"id": _id,
 						title,
 						"address": address.current,
 						"looks": array::compact(looks[] -> {
@@ -72,6 +83,15 @@ module.exports = async function () {
 								url,
 							},
 						},
+						"press0": press[0..1] -> {
+							_id in array::compact(^.^.^.content[].press[]._ref) => {
+								"isRepeated": true
+							},
+							${patterns.press}
+							"image": image.asset -> {
+								${patterns.imageMetadata}
+							},
+						},
 						hasCustomColour,
 						hasCustomColour == true => {
 							colour,
@@ -86,9 +106,6 @@ module.exports = async function () {
 						lookbook[1]._type == "image" => {
 							"image1": lookbook[1].asset -> {
 								${patterns.imageMetadata}
-								^.hasCustomColour != true => {
-									${patterns.imagePalette}
-								},
 							},
 						},
 						lookbook[1]._type == "video" => {
@@ -96,7 +113,17 @@ module.exports = async function () {
 								url,
 							},
 						},
+						"press1": press[2..3] -> {
+							_id in array::compact(^.^.^.content[].press[]._ref) => {
+								"isRepeated": true
+							},
+							${patterns.press}
+							"image": image.asset -> {
+								${patterns.imageMetadata}
+							},
+						},
 					},
+					"id": _id,
 					title,
 					year,
 					"address": address.current,
@@ -111,6 +138,15 @@ module.exports = async function () {
 					lookbook[0]._type == "video" => {
 						"video0": lookbook[0] {
 							url,
+						},
+					},
+					"press0": press[0..1] -> {
+						_id in array::compact(^.^.^.content[].press[]._ref) => {
+							"isRepeated": true
+						},
+						${patterns.press}
+						"image": image.asset -> {
+							${patterns.imageMetadata}
 						},
 					},
 					hasCustomColour,

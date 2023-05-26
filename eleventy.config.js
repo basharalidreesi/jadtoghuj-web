@@ -140,7 +140,7 @@ module.exports = function(eleventyConfig) {
 		return toHTML(value, {
 			components: {
 				block: (props) => {
-					return `<p class="text" dir="auto">${props?.children.replace(/ (?=[^ ]*$)/i, "&nbsp;")}</p>`
+					return `<p class="text" dir="auto">${props?.children.replace(/ (?<!<[^>]*)(?=[^ ]*$)/i, "&nbsp;")}</p>`
 				},
 				types: {
 					entity: ({value}) => {
@@ -151,14 +151,27 @@ module.exports = function(eleventyConfig) {
 						}
 						return `<span class="entity">${value.name}</span>`
 					},
-					// project: ({value}) => { return "[REF]" }
+					project: ({value}) => {
+						if (value.address) {
+							return `<span class="project"><a class="link" href="${value.address}">${value.title}</a></span>`
+						}
+						return `<span class="project">${value.title}</span>`
+					},
+					press: ({value}) => {
+						if (value.url) {
+							return `<span class="press"><a class="link" href="${value.url}">${value.title}</a></span>`
+						}
+						return `<span class="project">${value.title}</span>`
+					},
 				},
 				marks: {
+					bdi: ({children}) => {
+						return `<bdi>${children}</bdi>`
+					},
 					link: ({children, value}) => {
-						const href = value.url || ""
-						if (uriLooksSafe(href)) {
-							const rel = href.startsWith("/") ? undefined : "noopener"
-							return `<a class="link" href="${href}" rel="${rel}" target="_blank">${children}</a>`
+						const Href = value.url || ""
+						if (uriLooksSafe(Href)) {
+							return `<a class="link" href="${Href}" rel="noopener" target="_blank">${children}</a>`
 						}
 						return children
 					},

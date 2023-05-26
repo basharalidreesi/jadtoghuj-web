@@ -1,15 +1,12 @@
 TODO
 [] create iframe placeholder
 [] refine image blocks
-[] onvisibilitychange and idle time effects
+[] use Sanity's urlFor
 [] think about alternative design for nav subgroups
 [] social media previews... sanity hotspots?
-[] deal with safari's weird grey boxes
-[] think about generated description concat
 [] look info in lookbook
 [] page blocks
-[] project references
-[] reference blocks
+[] project press
 
 DONE
 [x] change template language to 11ty js
@@ -30,6 +27,8 @@ DONE
 [x] think about adding other types of embeds in addition to youtube and vimeo such as spotify, soundcloud, instagram, tiktok
 [x] add colour settings on the page level
 [x] enabling/disabling project tinting on the page level
+[x] press blocks
+[x] arabic font
 
 WONTFIX
 [x] refine sanityImage output (<source> in <picture> tags?)
@@ -37,3 +36,6 @@ WONTFIX
 [x] add drag scrolling to lookbook
 [x] create campaign blocks
 [x] repeated looks in category blocks
+[x] onvisibilitychange and idle time effects
+[x] deal with safari's weird grey boxes
+[x] think about generated description concat

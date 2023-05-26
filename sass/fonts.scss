@@ -1,17 +1,5 @@
 @charset "UTF-8";
 
-// @mixin unicodeRange($range) {
-// 	@if $range == "arabic" {
-// 		unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+10E60-10E7F, U+1EC70-1ECBF, U+1ED00-1ED4F, U+1EE00-1EEFF;
-// 	}
-// 	@if $range == "latin" {
-// 		unicode-range: U+0000-007F, U+0080-00FF, U+0100-017F, U+0180-024F, U+0250-02AF, U+02B0-02FF, U+1D00-1D7F, U+1D80-1DBF, U+1E00-1EFF, U+2070-209F, U+2100-214F, U+2150-218F, U+2C60-2C7F, U+A720-A7FF, U+AB30-AB6F, U+FB00-FB4F, U+FF00-FFEF;
-// 	}
-// 	@if $range == "space_control" {
-// 		unicode-range: U+0020, U+00A0;
-// 	}
-// }
-
 @font-face {
 		font-family: "Neue Montreal";
 		src:
@@ -20,7 +8,7 @@
 		font-weight: 400;
 		font-style: normal;
 		font-display: block;
-		// @include unicodeRange("latin");
+
 }
 
 @font-face {
@@ -31,7 +19,6 @@
 	font-weight: 400;
 	font-style: italic;
 	font-display: block;
-	// @include unicodeRange("latin");
 }
 
 @font-face {
@@ -42,7 +29,6 @@
 	font-weight: 700;
 	font-style: normal;
 	font-display: block;
-	// @include unicodeRange("latin");
 }
 
 @font-face {
@@ -53,23 +39,20 @@
 	font-weight: 700;
 	font-style: italic;
 	font-display: block;
-	// @include unicodeRange("latin");
 }
 
 @font-face {
-	font-family: "Simplified Arabic";
-	src: url("/assets/fonts/simplified_arabic-regular.woff") format("woff");
+	font-family: "XB Shafigh";
+	src: url("/assets/fonts/xbShafigh_regular.woff") format("woff");
 	font-weight: 400;
 	font-style: normal;
 	font-display: block;
-	// @include unicodeRange("arabic");
 }
 
-// @font-face {
-// 	font-family: "space_control";
-// 	src:
-// 		local("helvetica neue"),
-// 		local("helvetica"),
-// 		local("arial");
-// 	@include unicodeRange("space_control");
-// }
+@font-face {
+	font-family: "XB Shafigh";
+	src: url("/assets/fonts/xbShafigh_bold.woff") format("woff");
+	font-weight: 700;
+	font-style: normal;
+	font-display: block;
+}

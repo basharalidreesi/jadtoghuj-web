@@ -44,11 +44,20 @@ const Blocks = (data, eleventy) => {
 	// guard againts undefined if no blocks are found
 	if (!data.page?.content || data.page?.content.length === 0) { return "" }
 	// continue...
-	return data.page?.content?.map(block => {
+	return data.page?.content?.map((block) => {
 		// guard against text blocks with no text
 		if (block?.type === "textBlock" && (!block?.text || block?.text?.length === 0)) { return "" }
 		// guard against image blocks with no image
 		if (block?.type === "imageBlock" && !block?.image) { return "" }
+		// guard against press blocks with no press entries
+		if (
+			block?.type === "pressBlock"
+			&& (
+				!block?.press
+				|| block?.press?.length === 0
+				|| block?.press?.filter((entry) => entry?.url && entry?.title)?.length === 0
+			)
+		) { return "" }
 		// guard against page blocks with no pages or with one invalid page
 		if (
 			block?.type === "pageBlock"
@@ -78,12 +87,13 @@ const Blocks = (data, eleventy) => {
 		) { return "" }
 		// continue...
 		const Class = `class="${eleventy.camelCaseToKebabCase(block?.type)}"`
+		const Region = block?.key ? `data-region="${generateRegion(data, block)}"` : ""
 		const Size = block?.type === "projectBlock" || block?.type === "categoryBlock"
 			? `data-size="${block?.projects?.length || block?.looks?.length}"`
 			: block?.type === "pageBlock"
 				? `data-size="${block?.pages?.length}"`
 				: ""
-		const Options = [Class, Size]
+		const Options = [Class, Region, Size]
 		return (`
 			<div ${Options?.filter(Boolean)?.join(" ")}>
 				${BlockSwitch(block, data, eleventy)}
@@ -105,6 +115,7 @@ const BlockSwitch = (block, data, eleventy) => {
 	switch(block?.type) {
 		case "textBlock": return TextBlock(block, eleventy)
 		case "imageBlock": return ImageBlock(block, eleventy)
+		case "pressBlock": return PressBlock(block, eleventy)
 		case "pageBlock": return PageBlock(block, data, eleventy)
 		case "lookBlock": return LookBlock(block, data, eleventy)
 		case "projectBlock": return ProjectBlock(block, data, eleventy)
@@ -134,6 +145,16 @@ const ImageBlock = (block, eleventy) => {
 		element: "picture",
 		className: "image",
 	}).replace(/^\t\t\t/mg, "\t".repeat(4))
+}
+
+/**
+ * Generates a press block.
+ * @param {Object} block A block of type `pressBlock`.
+ * @param {Object} eleventy The global Eleventy configuration.
+ * @returns {string} HTML markup for a press block.
+ */
+const PressBlock = (block, eleventy) => {
+	return block?.press?.map((entry) => Press(entry, eleventy))?.join("")
 }
 
 /**
@@ -200,8 +221,9 @@ const CategoryBlock = (block, data, eleventy) => {
  * @param {Object} eleventy The global Eleventy configuration.
  * @returns {string} HTML markup for all projects received from a valid block. The markup consists of:
  * - a link component if the project is eligible for one,
- * - an image or video component if the project is eligible for either one, and
- * - a look component if the project is eligible for one.
+ * - an image or video component if the project is eligible for either one,
+ * - a look component if the project is eligible for one, and
+ * - a press component if the project is eligible for one.
  */
 const Projects = (block, data, eleventy) => {
 	/**
@@ -219,7 +241,7 @@ const Projects = (block, data, eleventy) => {
 		return (`
 			<a ${Options?.filter(Boolean)?.join(" ")}>
 				<span>
-					${ project?.title }
+					<bdi>${ project?.title }</bdi>
 				</span>
 			</a>
 		`).replace(/^\t\t\t/mg, "\t".repeat(4))
@@ -297,6 +319,45 @@ const Projects = (block, data, eleventy) => {
 			</div>
 		`).replace(/^\t\t\t/mg, "\t".repeat(4))
 	}
+	/**
+	 * Generates a project's press component after checking its eligibility for one.
+	 * @param {Object} project A project.
+	 * @returns {string} An empty string if the project is not eligible for a press component, or HTML markup for the project's press component.
+	 */
+	const ProjectPress = (project) => {
+		// guard against projects with no press
+		if (
+			!project?.press0
+			|| project?.press0?.length === 0
+			|| project?.press0?.filter((entry) => entry?.url && entry?.title)?.length === 0
+			|| project?.press0?.filter((entry) => entry?.isRepeated)?.length === project?.press0?.filter((entry) => entry?.url)?.length
+			|| (
+				project?.isRepeated
+				&& (
+					!project?.press1
+					|| project?.press1?.length === 0
+					|| project?.press1?.filter((entry) => entry?.url && entry?.title)?.length === 0
+					|| project?.press1?.filter((entry) => entry?.isRepeated)?.length === project?.press1?.filter((entry) => entry?.url)?.length
+				)
+			)
+		) { return "" }
+		// continue...
+		const Region = `data-region="${generateRegion(data, block, project)}"`
+		if (!project?.isRepeated) {
+			return project?.press0?.map((entry) => Press(entry, eleventy, {
+				region: Region,
+			}))?.join("")
+		}
+		if (project?.isRepeated
+			&& project?.press1
+			&& project?.press1?.length > 0
+			&& project?.press1?.filter((entry) => entry?.url && entry?.title)?.length > 0
+		) {
+			return project?.press1?.map((entry) => Press(entry, eleventy, {
+				region: Region,
+			}))?.join("").replace(/^\t\t\t/mg, "\t".repeat(2))
+		}
+	}
 	return block?.projects?.map((project) => {
 		// guard against projects with neither of image0 or video0, and projects with looks that are all repeated
 		if (
@@ -310,6 +371,7 @@ const Projects = (block, data, eleventy) => {
 		// continue...
 		const Class = `class="project"`
 		const IsRepeated = project?.isRepeated ? `data-is-repeated="true"` : ""
+		const Region = `data-region="${generateRegion(data, block, project)}"`
 		const Content = `data-content="${[
 			!project?.isRepeated && project?.image0?.url ? "image" : "",
 			!project?.isRepeated && project?.video0?.url ? "video" : "",
@@ -319,10 +381,7 @@ const Projects = (block, data, eleventy) => {
 		]?.filter(Boolean)?.join(" ")}"`
 		const Style = () => {
 			if (!data.page?.doesAllowTinting) {
-				return `style="${eleventy.formatCss({
-					"--colour-dominant-background": "var(--colour-background-bottom)",
-					"--colour-dominant-foreground": "var(--colour-text)",
-				})}"`
+				return null
 			}
 			if (!project?.hasCustomColour) {
 				if (!project.isRepeated && project?.image0?.palette?.background) {
@@ -331,10 +390,10 @@ const Projects = (block, data, eleventy) => {
 						"--colour-dominant-foreground": project?.image0?.palette?.foreground,
 					})}"`
 				}
-				if (project.isRepeated && project?.image1?.palette?.background) {
+				if (project.isRepeated && project?.image0?.palette?.background) {
 					return `style="${eleventy.formatCss({
-						"--colour-dominant-background": project?.image1?.palette?.background,
-						"--colour-dominant-foreground": project?.image1?.palette?.foreground,
+						"--colour-dominant-background": project?.image0?.palette?.background,
+						"--colour-dominant-foreground": project?.image0?.palette?.foreground,
 					})}"`
 				}
 			}
@@ -349,6 +408,7 @@ const Projects = (block, data, eleventy) => {
 		const Options = [
 			Class,
 			IsRepeated,
+			Region,
 			Content,
 			Style(),
 		]
@@ -358,8 +418,84 @@ const Projects = (block, data, eleventy) => {
 				${ProjectImageOrVideo(project)}
 				${ProjectLooks(project, block?.type)}
 			</article>
+			${ProjectPress(project)}
 		`).replace(/^\t\t\t/mg, "\t".repeat(4))
 	}).join("")
+}
+
+/**
+ * Generates a press entry after checking its validity.
+ * @param {Object} entry A press entry.
+ * @returns {string} An empty string if the entry is not valid, or HTML markup for a press entry.
+ */
+const Press = (entry, eleventy = null, params = {}) => {
+	const {
+		region = null,
+	} = params
+	// guard against press entries with no url or title
+	if (!entry || !entry?.url || !entry?.title || entry?.isRepeated) { return "" }
+	// continue...
+	const PressImage = () => {
+		if (!eleventy || !entry?.image || !entry?.image?.url) { return "" }
+		return eleventy.sanityImage(entry?.image, {
+			element: "picture",
+			className: "press-image",
+			backgroundSize: "cover",
+		})
+	}
+	const PressTitle = () => {
+		const Class = `class="text press-title"`
+		const Options = [Class]
+		return (`
+			<p ${Options?.filter(Boolean)?.join(" ")}>
+				<bdi data-bdi-target="parent">
+					${entry?.title?.replace(/ (?=[^ ]*$)/i, "&nbsp;")}
+				</bdi>
+			</p>
+		`)
+	}
+	const PressPublisher = () => {
+		const Class = `class="text press-publisher"`
+		const Options = [Class]
+		return (`
+			<p ${Options?.filter(Boolean)?.join(" ")}>
+				<bdi data-bdi-target="parent">
+					${entry?.publisher?.toUpperCase()?.replace(/ (?=[^ ]*$)/i, "&nbsp;") || hostname}
+				</bdi>
+			</p>
+		`)
+	}
+	var hostname = ""
+	if (!entry?.publisher) {
+		try {
+			hostname = new URL(entry?.url)?.hostname
+		} catch {}
+	}
+	const Class = `class="press-entry"`
+	const Options = [Class, region]
+	return (`
+		<article ${Options?.filter(Boolean)?.join(" ")}>
+			<a href="${entry?.url}" class="press-link" rel="noopener" target="_blank">
+				${PressTitle()}
+				${PressPublisher()}
+				${PressImage()}
+			</a>
+		</article>
+	`)
+}
+
+const generateRegion = (data, block = null, project = null) => {
+	const datum1 = block ? data.page?.content?.findIndex((item) => item.key === block?.key) : ""
+	const datum2 = project ? block?.projects?.findIndex((item) => item.id === project?.id) + 1 : ""
+	const dictionary = (number) => {
+		var letters = ""
+		while (number >= 0) {
+			letters = "abcdefghijklmnopqrstuvwxyz"[number % 26] + letters
+			number = Math.floor(number / 26) - 1
+		}
+		return letters
+	}
+	return dictionary(datum1) + datum2?.toString()
 }
 
 module.exports = Page

@@ -400,8 +400,8 @@ const ProjectInfo = (data, eleventy) => {
 			${ProjectTitle()}
 			${ProjectDescription()}
 			${ProjectStats()}
-			${ProjectContributions()}
 			${ProjectLooks()}
+			${ProjectContributions()}
 		</div>
 	`)
 }

@@ -89,6 +89,13 @@ const Analytics = (data) => {
 
 const Style = (data, eleventy) => {
 	const Colours = () => {
+		if (data.page?.hasCustomColours && data.page?.colours?.text && data.page?.colours?.top && data.page?.colours?.bottom) {
+			return {
+				"--colour-1": data.page?.colours?.text,
+				"--colour-2": data.page?.colours?.top,
+				"--colour-3": data.page?.colours?.bottom,
+			}
+		}
 		if (data.settings?.colours?.text && data.settings?.colours?.top && data.settings?.colours?.bottom) {
 			return {
 				"--colour-1": data.settings?.colours?.text,
@@ -107,21 +114,21 @@ const Style = (data, eleventy) => {
 
 const BodyOptions = (data, eleventy) => {
 	const Style = () => {
-		const hexTransparency = "80"
-		if (data.page?.fileSlug.toLowerCase() === "page") {
-			if (
-				data.page?.hasCustomColours
-				&& data.page?.colours?.top
-				&& data.page?.colours?.bottom
-				&& data.page?.colours?.text
-			) {
-				return `style="${eleventy.formatCss({
-					"--colour-text": data.page?.colours?.text,
-					"--colour-background-top":  data.page?.colours?.top,
-					"--colour-background-bottom": data.page?.colours?.bottom,
-				})}"`
-			}
-		}
+		const hexTransparency = "59"
+		// if (data.page?.fileSlug.toLowerCase() === "page") {
+		// 	if (
+		// 		data.page?.hasCustomColours
+		// 		&& data.page?.colours?.top
+		// 		&& data.page?.colours?.bottom
+		// 		&& data.page?.colours?.text
+		// 	) {
+		// 		return `style="${eleventy.formatCss({
+		// 			"--colour-text": data.page?.colours?.text,
+		// 			"--colour-background-top":  data.page?.colours?.top,
+		// 			"--colour-background-bottom": data.page?.colours?.bottom,
+		// 		})}"`
+		// 	}
+		// }
 		if (data.page?.fileSlug.toLowerCase() === "project") {
 			if (data.project?.hasCustomColour && data.project?.colour) {
 				return `style="${eleventy.formatCss({
@@ -231,14 +238,25 @@ const Nav = (data) => {
 			isWithinASubgroup = false,
 		} = params
 		// guard against members that are not pages or members without a title or an address
-		if (member?.type !== "page" || !member?.title || !member?.address) { return "" }
+		if (
+			member?.type !== "page"
+			|| !member?.title
+			|| !member?.target
+			|| (member?.target === "internal" && !member?.address)
+			|| (member?.target === "external" && !member?.url)
+		) { return "" }
 		// continue...
 		const Class = isWithinASubgroup ? `class="nav-sublink"` : `class="nav-link"`
 		const Href = () => {
-			if (member?.address === "/") {
-				return `href="${"/" + BasePath(data)}"`
+			if (member?.target === "internal") {
+				if (member?.address === "/") {
+					return `href="${"/" + BasePath(data)}"`
+				}
+				return `href="${"/" + BasePath(data) + member?.address + "/"}"`
 			}
-			return `href="${"/" + BasePath(data) + member?.address + "/"}"`
+			if (member?.target === "external") {
+				return `href="${member?.url}" rel="noopener" target="_blank"`
+			}
 		}
 		const AriaCurrent = () => {
 			if (
@@ -254,7 +272,7 @@ const Nav = (data) => {
 		return (`
 			<a ${Options?.filter(Boolean)?.join(" ")}>
 				<span>
-					${member?.title}
+					<bdi>${member?.title}</bdi>
 				</span>
 			</a>
 		`).replace(/^\t\t\t/mg, "\t".repeat(isWithinASubgroup ? 9 : 5))

@@ -200,7 +200,16 @@
 			}
 		}
 		dt {
-			background: linear-gradient(to bottom, var(--colour-dominant-background), var(--colour-background-top));
+			& {
+				background: linear-gradient(to bottom, var(--colour-dominant-background), var(--colour-background-top));
+			}
+			& + dd {
+				&::before {
+					display: flex;
+					align-items: center;
+					justify-content: center;
+				}
+			}
 		}
 		dd {
 			& {
@@ -223,8 +232,11 @@
 				background: linear-gradient(to right, var(--colour-background-top), var(--colour-dominant-background));
 			}
 			&::before {
+				content: "✦";
 				left: 0;
 				width: 3.125rem;
+				text-align: center;
+				color: var(--colour-dominant-background);
 			}
 			&::after {
 				left: 3.125rem;
@@ -274,7 +286,7 @@
 					height: calc(100% - 2rem);
 					fill: var(--colour-background-top);
 					filter: blur(0.125rem);
-					opacity: 0.5;
+					opacity: 0.25;
 					overflow: visible;
 				}
 				* {

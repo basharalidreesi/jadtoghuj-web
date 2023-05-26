@@ -12,6 +12,10 @@ const patterns = {
 					title,
 					"address": address.current,
 				},
+				_type == "press" => @-> {
+					url,
+					title,
+				},
 			},
 		},
 	`),
@@ -43,6 +47,12 @@ const patterns = {
 			|| count(array::compact(lookbook[].asset._ref)) >= 1
 			|| count(array::compact(lookbook[].url)) >= 1
 		)
+	`),
+	press: (`
+		url,
+		title,
+		publisher,
+		datePublished,
 	`),
 }
 
