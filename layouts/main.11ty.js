@@ -170,7 +170,7 @@ const Logo = async (data, eleventy) => {
 	return (`
 		<div ${Options?.filter(Boolean)?.join(" ")}>
 			<a href="${"/" + BasePath(data)}">
-				${data.settings?.logo?.url ? await eleventy.svgFromUrl(data.settings?.logo?.url) : FallbackLogo}
+				${data.settings?.logo?.url ? await eleventy.svgFromUrl(data.settings?.logo?.url, FallbackLogo) : ""}
 			</a>
 		</div>
 	`).replace(/^\t\t/mg, "\t".repeat(5))
@@ -272,7 +272,7 @@ const Nav = (data) => {
 		return (`
 			<a ${Options?.filter(Boolean)?.join(" ")}>
 				<span>
-					<bdi>${member?.title}</bdi>
+					${member?.title}
 				</span>
 			</a>
 		`).replace(/^\t\t\t/mg, "\t".repeat(isWithinASubgroup ? 9 : 5))

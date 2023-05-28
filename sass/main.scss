@@ -12,7 +12,7 @@ body {
 	width: 100%;
 	min-height: 100%;
 	font-size: 16px;
-	font-family: "Neue Montreal", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+	font-family: "Neue Montreal", "Helvetica Neue", "Helvetica", "XB Shafigh", "Arial", sans-serif;
 	font-weight: 400;
 	font-style: normal;
 	line-height: 1.0;
@@ -94,10 +94,6 @@ picture,
 	}
 }
 
-[lang="ar"] {
-	font-family: "XB Shafigh", serif;
-}
-
 body {
 	& {
 		display: flex;
@@ -166,10 +162,12 @@ body {
 			@include visuallyHidden;
 		}
 	}
-	@media (max-width: 576px) {
+	@media (max-width: 768px) {
 		& > .logo {
 			height: 2.375rem;
 		}
+	}
+	@media (max-width: 576px) {
 		& > .nav {
 			&.active {
 				position: absolute;

@@ -30,7 +30,13 @@ module.exports = async function () {
 			_type == "pageBlock" => {
 				pages[] -> {
 					title,
-					"address": address.current,
+					target,
+					target == "internal" => {
+						"address": address.current,
+					},
+					target == "external" => {
+						url,
+					},
 				},
 			},
 			_type == "lookBlock" => {

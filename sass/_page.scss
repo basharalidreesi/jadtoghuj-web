@@ -11,15 +11,18 @@
 		& + .text-block {
 			margin-block-start: 1rem;
 		}
-		& > *:first-child {
-			padding-block-start: 1rem;
-			border-block-start: 1px solid;
-		}
-		& > *:last-child {
-			padding-block-end: 1rem;
-			border-block-end: 1px solid;
-		}
 	}
+
+	// *:not(.text-block) + .text-block {
+	// 	& > *:first-child {
+	// 		padding-block-start: 1rem;
+	// 		border-block-start: 1px solid;
+	// 	}
+	// 	& > *:last-child {
+	// 		padding-block-end: 1rem;
+	// 		border-block-end: 1px solid;
+	// 	}
+	// }
 
 	.image-block {
 		img {
@@ -33,10 +36,6 @@
 		& {
 			transform: translateZ(0);
 		}
-		.page {
-			margin: clamp(2.5rem, 3.75vw, 5rem);
-			flex-shrink: 0;
-		}
 		.globe {
 			& {
 				position: relative;
@@ -44,9 +43,12 @@
 				width: 10rem;
 				height: 10rem;
 				border-radius: 100%;
-				box-shadow: 0 0 0 1px var(--colour-background-bottom);
+				box-shadow: 0 0 0 1px;
 			}
-			*:not(.globe-bubble):not(.globe-bubble *) {
+			&:not([data-size="1"]):not([data-size="2"]):not([data-size="3"]) {
+				margin: 10rem;
+			}
+			*:not(.globe-bubble):not(.globe-bubble *):not(.globe-logo *) {
 				position: absolute;
 				top: 0;
 				left: 0;
@@ -58,7 +60,7 @@
 			.globe-longitude,
 			.globe-latitude {
 				& {
-					--colour-text: var(--colour-background-bottom);
+					// --colour-text: var(--colour-background-bottom);
 				}
 				&, * {
 					border-radius: 100%;
@@ -71,6 +73,44 @@
 				background: radial-gradient(var(--colour-background-top), var(--colour-background-bottom));
 				box-shadow: 0 0 0.5rem var(--colour-background-bottom);
 				opacity: 0.75;
+			}
+			.globe-logo {
+				& {
+					background: radial-gradient(closest-side, var(--colour-background-top), transparent);
+					background-size: 75% 75%;
+					background-repeat: no-repeat;
+					background-position: center;
+				}
+				& > div {
+					position: absolute;
+					top: 50%;
+					left: 50%;
+					transform: translate(-50%, -50%);
+					animation: 5s logoRotate linear infinite;
+					@keyframes logoRotate {
+						0% {
+							transform: translateX(-50%) translateY(-50%) rotateY(0deg);
+						}
+						100% {
+							transform: translateX(-50%) translateY(-50%) rotateY(360deg);
+						}
+					}
+				}
+				svg {
+					display: block;
+					height: 5rem;
+					width: auto;
+					fill: var(--colour-text);
+					stroke: var(--colour-background-top);
+					stroke-width: 2px;
+					paint-order: stroke;
+					overflow: visible;
+					transform: translateZ(0);
+					filter: drop-shadow(0 0 0.5rem var(--colour-background-top));
+					& * {
+						vector-effect: non-scaling-stroke;
+					}
+				}
 			}
 			.globe-longitude,
 			.globe-latitude {
@@ -120,86 +160,85 @@
 					transform: rotateX(90deg) translateZ(4rem) scale(0.5581741503);
 				}
 			}
+			&[data-size="1"] {
+				.globe-bubble {
+					top: 100%;
+					left: 50%;
+					transform: translate(-50%, -50%);
+				}
+			}
+			&[data-size="2"],
+			&[data-size="3"],
+			&[data-size="4"],
+			&[data-size="5"],
+			&[data-size="6"],
+			&[data-size="7"],
+			&[data-size="8"],
+			&[data-size="9"],
+			&[data-size="10"] {
+				.globe-button:nth-child(2) span {
+					rotate: 180deg;
+				}
+			}
+			&[data-size="4"],
+			&[data-size="5"],
+			&[data-size="6"],
+			&[data-size="7"],
+			&[data-size="8"],
+			&[data-size="9"],
+			&[data-size="10"] {
+				.globe-button:nth-child(3) span {
+					rotate: 180deg;
+				}
+			}
+			&[data-size="6"],
+			&[data-size="7"],
+			&[data-size="8"],
+			&[data-size="9"],
+			&[data-size="10"] {
+				.globe-button:nth-child(4) span {
+					rotate: 180deg;
+				}
+			}
+			&[data-size="8"],
+			&[data-size="9"],
+			&[data-size="10"] {
+				.globe-button:nth-child(5) span {
+					rotate: 180deg;
+				}
+			}
+			&[data-size="9"],
+			&[data-size="10"] {
+				.globe-button:nth-child(6) span {
+					rotate: 180deg;
+				}
+			}
 			.globe-button {
+				rotate: calc(var(--_baseRotation) + 360deg / var(--_size) * var(--_index));
+			}
+			.globe-bubble {
+				@include bubble(
+					$position: absolute,
+					$top: 50%,
+					$right: calc(100% + 1rem),
+				);
 				& {
-					transform-style: preserve-3d;
-					transform: rotateX(-90deg) rotateY(0deg) rotateZ(180deg);
-					animation: 15s globeButtonOrbit linear infinite, 15s globeButtonIndex linear infinite;
-					@keyframes globeButtonOrbit {
-						0% {
-							transform: rotateX(-90deg) rotateY(0deg) rotateZ(180deg);
-						}
-						100% {
-							transform: rotateX(-90deg) rotateY(0deg) rotateZ(540deg);
-						}
-					}
-					@keyframes globeButtonIndex {
-						0% {
-							z-index: 1;
-						}
-						24% {
-							z-index: 1;
-						}
-						25% {
-							z-index: 0;
-						}
-						74% {
-							z-index: 0;
-						}
-						75% {
-							z-index: 1;
-						}
-						100% {
-							z-index: 1;
-						}
-					}
+					transform: translateY(-50%);
+					transform-origin: top right;
 				}
-				.globe-bubble {
-					@include bubble(
-						$position: absolute,
-						$top: calc(100% - (2.375rem / 2) + 1rem),
-						$left: 50%,
-					);
+				&[aria-current] {
 					& {
-						transform: translateX(-50%) rotateX(90deg) rotateY(180deg) rotateZ(0deg);
+						background: var(--colour-text);
 					}
-					& > span {
-						animation: 15s globeButtonFlip linear infinite;
-						@keyframes globeButtonFlip {
-							0% {
-								scale: 1 1 1;
-							}
-							24% {
-								scale: 1 1 1;
-							}
-							25% {
-								scale: -1 1 1;
-							}
-							74% {
-								scale: -1 1 1;
-							}
-							75% {
-								scale: 1 1 1;
-							}
-							100% {
-								scale: 1 1 1;
-							}
-						}
+					span {
+						--colour-text: var(--colour-background-top);
 					}
 				}
-			}
-			&[aria-current] {
-				.globe-bubble {
-					background: var(--colour-text);
+				@media (any-hover: hover) {
+					&:not([aria-current]):hover {
+						text-decoration: underline;
+					}
 				}
-				.globe-bubble > span {
-					--colour-text: var(--colour-background-top);
-				}
-			}
-			@media (any-hover: hover) {
-				&:not([aria-current]):hover .globe-bubble {
-					text-decoration: underline;
-				}				
 			}
 		}
 	}
@@ -224,81 +263,6 @@
 		& + .text-block,
 		& + .page-block {
 			margin-block-start: 1rem;
-		}
-	}
-
-	.press-entry {
-		& {
-			margin-block-start: 1rem;
-			margin-inline: clamp(1.5rem - 1rem, 2.5vw - 1rem, 5rem - 1rem);
-		}
-		.press-link {
-			& {
-				display: flex;
-				flex-flow: column nowrap;
-				padding: 1rem;
-				max-width: 20rem;
-				background: var(--colour-background-top);
-				border: 1px solid;
-				border-radius: 1rem;
-				box-shadow: 0 0 0.125rem 0 var(--colour-background-top);
-				transition: box-shadow 0.05s linear;
-			}
-			& > * {
-				width: 100%;
-			}
-			.press-title {
-				& {
-					order: 2;
-				}
-				&[lang="ar"] + .press-publisher {
-					& {
-						direction: rtl;
-					}
-					&::before {
-						content: "←";
-					}
-				}
-			}
-			.press-publisher {
-				& {
-					order: 3;
-					text-align: end;
-				}
-				&:not([lang="ar"])::before {
-					content: "→";
-				}
-				&[lang="ar"]::before {
-					content: "←";
-				}
-			}
-			.press-image {
-				& {
-					order: 1;
-					display: block;
-					margin-block-end: 1rem;
-				}
-				img {
-					display: block;
-					width: 100%;
-					height: 20rem;
-					object-fit: cover;
-				}
-			}
-			@media (any-hover: hover) {
-				&:hover {
-					& {
-						box-shadow: 0 0 0.25rem 0 var(--colour-background-top);
-					}
-					.press-title,
-					.press-publisher {
-						bdi {
-							color: var(--colour-background-top);
-							background: var(--colour-text);
-						}
-					}
-				}
-			}
 		}
 	}
 
@@ -341,11 +305,17 @@
 			}
 			.project-looks {
 				height: 30rem;
+				@media (max-width: 576px) {
+					height: 20rem;
+				}
 			}
 		}
 		&[data-content~="image"][data-content~="looks"] {
 			.project-looks {
 				margin-block-start: -10rem;
+				@media (max-width: 576px) {
+					margin-block-start: -7.5rem;
+				}
 			}
 			.project-looks[data-size="1"] {
 				display: none;
@@ -363,15 +333,6 @@
 			display: block;
 			height: 100%;
 			width: auto;
-		}
-	}
-
-	.project[data-content="image"] + .project[data-content="image"] + .press-entry {
-		& {
-			width: 100%;
-		}
-		.press-link {
-			margin-inline: auto;
 		}
 	}
 
@@ -399,6 +360,9 @@
 		& {
 			order: 1;
 			height: 30rem;
+			@media (max-width: 576px) {
+				height: 25rem;
+			}
 		}
 		img {
 			margin: auto;
@@ -415,6 +379,10 @@
 			height: 20rem;
 			width: calc(20rem / 0.5625);
 			max-width: 100%;
+			@media (max-width: 576px) {
+				height: 15rem;
+				width: calc(15rem / 0.5625);
+			}
 		}
 		.oembed,
 		iframe {
@@ -454,6 +422,9 @@
 			margin-inline: -1rem;
 			overflow: hidden;
 			mask: linear-gradient(to right, transparent, black 1rem, black calc(100% - 1rem), transparent);
+			@media (max-width: 576px) {
+				height: 15rem;
+			}
 		}
 		.project-look {
 			& {
@@ -467,6 +438,83 @@
 			&[data-is-opaque="false"] img {
 				filter: drop-shadow(0 0 0.0625rem var(--colour-dominant-foreground));
 			}
+		}
+	}
+
+	.press {
+		margin-block-start: 1rem;
+		margin-inline: clamp(1.5rem - 1rem, 2.5vw - 1rem, 5rem - 1rem);
+	}
+
+	.press-link {
+		& {
+			display: flex;
+			flex-flow: column nowrap;
+			padding: 1rem;
+			max-width: 20rem;
+			background: var(--colour-background-top);
+			border: 1px solid;
+			border-radius: 1rem;
+			box-shadow: 0 0 0.125rem 0 var(--colour-background-top);
+			transition: box-shadow 0.05s linear;
+		}
+		& > * {
+			width: 100%;
+		}
+		@media (any-hover: hover) {
+			&:hover {
+				& {
+					box-shadow: 0 0 0.25rem 0 var(--colour-background-top);
+				}
+				.press-title *,
+				.press-publisher * {
+					color: var(--colour-background-top);
+					background: var(--colour-text);
+				}
+			}
+		}
+	}
+
+	.press-title {
+		& {
+			order: 2;
+		}
+	}
+
+	.press-publisher {
+		& {
+			order: 3;
+			text-align: end;
+		}
+		&::before {
+			content: "→";
+		}
+		&[dir="rtl"]::before {
+			content: "←";
+		}
+	}
+
+	.press-image {
+		& {
+			order: 1;
+			display: block;
+			height: 20rem;
+			margin-block-end: 1rem;
+		}
+		img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+	}
+
+	.project[data-content="image"] + .project[data-content="image"] + .press {
+		& {
+			width: 100%;
+		}
+		.press-link {
+			margin-inline: auto;
 		}
 	}
 

@@ -3,49 +3,27 @@
 const jad = {
 
 	lexicon: {
-		// bdi
-		bdis: document.querySelectorAll("bdi"),
 		// nav
 		navButtons: document.querySelectorAll(".nav-expand"),
+		// pages
+		pageBody: document.querySelector(`body[data-layout="page"]`),
+		pressTitles: document.querySelectorAll(".press-title"),
 		// projects
 		header: document.querySelector(".header"),
-		projectTitle: document.querySelector(`[data-layout="project"] .project-info .project-title`),
-		lookbook: document.querySelector(`[data-layout="project"] .project-lookbook`),
-		lookbookEntries: document.querySelectorAll(`[data-layout="project"] .lookbook-entry`),
-		lookbookControlers: document.querySelectorAll(`[data-layout="project"] .lookbook-controlers > *`),
+		projectBody: document.querySelector(`body[data-layout="project"]`),
+		projectTitle: document.querySelector(".project-info .project-title"),
+		lookbook: document.querySelector(".project-lookbook"),
+		lookbookEntries: document.querySelectorAll(".lookbook-entry"),
+		lookbookControlers: document.querySelectorAll(".lookbook-controlers > *"),
 		// oEmbeds
 		oEmbeds: document.querySelectorAll(`[data-oembed="true"]`),
-		// scrapes
-		scrapes: document.querySelectorAll(`[data-scrape="true"]`),
 	},
 
 	initAllScripts: function() {
-		this.bdis.initBdiScripts();
 		this.nav.initNavScripts();
-		this.projects.initLookbookScripts();
+		this.pages.initPageScripts();
+		this.projects.initProjectScripts();
 		this.oEmbeds.initOEmbedScripts();
-		// this.scrapes.initScrapeScripts();
-	},
-
-	bdis: {
-		initBdiScripts: function() {
-			if (!jad.lexicon.bdis) { return; }
-			this.declareBdis();
-		},
-		declareBdis: function() {
-			jad.lexicon.bdis.forEach((bdi) => {
-				if (!bdi.textContent) { return; }
-				const target = bdi.getAttribute("data-bdi-target") === "parent" ? bdi.parentElement : bdi
-				if (this.isArabic(bdi.textContent)) {
-					target.setAttribute("lang", "ar");
-					target.setAttribute("dir", "rtl");
-				}
-			});
-		},
-		isArabic: function(text) {
-			var regex = /[\u0600-\u06FF]/;
-			return regex.test(text);
-		},
 	},
 
 	nav: {
@@ -83,26 +61,31 @@ const jad = {
 		},
 	},
 
+	pages: {
+		initPageScripts: function() {
+			if (!jad.lexicon.pageBody) { return; }
+			this.resolvePressDirs();
+		},
+		resolvePressDirs: function() {
+			if (!jad.lexicon.pressTitles) { return; }
+			jad.lexicon.pressTitles.forEach((title) => {
+				const computedDir = window.getComputedStyle(title, null).direction;
+				if (computedDir === "rtl") {
+					const publisher = title.parentElement.querySelector(".press-publisher");
+					if (!publisher) { return; }
+					publisher.setAttribute("dir", "rtl");
+				}
+			});
+		}
+	},
+
 	projects: {
-		initLookbookScripts: function() {
-			if (!jad.lexicon.lookbook) { return; }
-			this.enableTitleScroll();
+		initProjectScripts: function() {
+			if (!jad.lexicon.projectBody) { return; }
 			this.observeIntersections();
 			this.observeResizes();
+			this.enableTitleScroll();
 			this.enableControlers();
-		},
-		enableTitleScroll: function() {
-			jad.lexicon.projectTitle.addEventListener("click", () => {
-				const offsetTop = jad.lexicon.projectTitle.parentElement.offsetTop;
-				const offsetHeight = jad.lexicon.header.offsetHeight;
-				const padding = 16;
-				const scrollTop = offsetTop - offsetHeight - padding;
-				if (Math.round(window.scrollY) >= scrollTop || window.scrollY === document.body.scrollHeight - window.innerHeight) {
-					window.scrollTo(0, 0);
-					return;
-				}
-				window.scrollTo(0, scrollTop);
-			});
 		},
 		currentIntersection: null,
 		observeIntersections: function() {
@@ -132,6 +115,19 @@ const jad = {
 				});
 			});
 			observer.observe(jad.lexicon.lookbook);
+		},
+		enableTitleScroll: function() {
+			jad.lexicon.projectTitle.addEventListener("click", () => {
+				const offsetTop = jad.lexicon.projectTitle.parentElement.offsetTop;
+				const offsetHeight = jad.lexicon.header.offsetHeight;
+				const padding = 16;
+				const scrollTop = offsetTop - offsetHeight - padding;
+				if (Math.round(window.scrollY) >= scrollTop || window.scrollY === document.body.scrollHeight - window.innerHeight) {
+					window.scrollTo(0, 0);
+					return;
+				}
+				window.scrollTo(0, scrollTop);
+			});
 		},
 		enableControlers: function() {
 			jad.lexicon.lookbookControlers.forEach((controler) => {

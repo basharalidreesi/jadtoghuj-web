@@ -78,24 +78,26 @@ module.exports = function(eleventyConfig) {
 				<div class="globe-latitude">
 					${(`<div></div>`).repeat(5)}
 				</div>
-				<div class="globe-button">
-					<span class="globe-bubble">
-						<span>
-							${title}
+				<div class="globe-buttons">
+					<div class="globe-button">
+						<span class="globe-bubble">
+							<span>
+								${title}
+							</span>
 						</span>
-					</span>
+					</div>
 				</div>
 			</a>
 		`)
 	})
 
-	eleventyConfig.addJavaScriptFunction("svgFromUrl", async function(value) {
+	eleventyConfig.addJavaScriptFunction("svgFromUrl", async function(value, fallback) {
 		if (!value) { return }
 		try {
 			const data = await fetch(value).then((response) => response.text())
 			return eleventyConfig.getFilter("strip")(data)
 		} catch {
-			return null
+			return fallback ? fallback : ""
 		}
 	})
 
