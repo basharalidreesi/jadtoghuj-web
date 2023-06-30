@@ -218,8 +218,8 @@ module.exports = function(eleventyConfig) {
 	return {
 		dir: {
 			input: ".",
-			includes: "includes",
-			layouts: "layouts",
+			// includes: "includes",
+			// layouts: "layouts",
 			data: "data",
 			output: "dist",
 		},
