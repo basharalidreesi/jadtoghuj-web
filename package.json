@@ -5,6 +5,7 @@
 	"main": "package.json",
 	"license": "UNLICENSED",
 	"scripts": {
+		"debug": "DEBUG=* npx eleventy --config=./eleventy.config.js",
 		"watch:sass": "sass --watch --no-source-map sass:dist/assets/css",
 		"build:sass": "sass --no-source-map sass:dist/assets/css",
 		"watch:eleventy": "eleventy --config=./eleventy.config.js --serve",
