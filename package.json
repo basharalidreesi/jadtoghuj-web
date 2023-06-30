@@ -5,11 +5,10 @@
 	"main": "package.json",
 	"license": "UNLICENSED",
 	"scripts": {
-		"debug": "DEBUG=* npx eleventy --config=./eleventy.config.js",
 		"watch:sass": "sass --watch --no-source-map sass:dist/assets/css",
 		"build:sass": "sass --no-source-map sass:dist/assets/css",
-		"watch:eleventy": "eleventy --config=./eleventy.config.js --serve",
-		"build:eleventy": "eleventy --config=./eleventy.config.js",
+		"watch:eleventy": "eleventy --serve",
+		"build:eleventy": "eleventy",
 		"start": "npm-run-all build:sass --parallel watch:*",
 		"build": "npm-run-all build:*"
 	},
