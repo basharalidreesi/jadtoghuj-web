@@ -7,8 +7,8 @@
 	"scripts": {
 		"watch:sass": "sass --watch --no-source-map sass:dist/assets/css",
 		"build:sass": "sass --no-source-map sass:dist/assets/css",
-		"watch:eleventy": "eleventy --serve",
-		"build:eleventy": "eleventy",
+		"watch:eleventy": "eleventy --config=./eleventy.config.js --serve",
+		"build:eleventy": "eleventy --config=./eleventy.config.js",
 		"start": "npm-run-all build:sass --parallel watch:*",
 		"build": "npm-run-all build:*"
 	},
