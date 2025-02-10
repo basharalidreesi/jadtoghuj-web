@@ -1,0 +1,120 @@
+@mixin no-scrollbar() {
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* Internet Explorer 10+ */
+	&::-webkit-scrollbar { /* WebKit */
+		width: 0;
+		height: 0;
+	}
+}
+
+@mixin nowrap($ellipsis: false) {
+	& {
+		white-space: nowrap;
+	}
+	@if $ellipsis == true {
+		text-overflow: ellipsis;
+		overflow: hidden;
+		overflow: clip;
+	}
+}
+
+@mixin hidden() {
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	height: 1px;
+	overflow: hidden;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
+
+@mixin ui-body($font-size: var(--font-size-stop-1), $font-weight: 300, $line-height: 1.3) {
+	font-family: var(--font-family-sans);
+	font-size: $font-size;
+	font-weight: $font-weight;
+	line-height: $line-height;
+}
+
+@mixin ui-note($font-size: var(--font-size-stop-1), $font-weight: 300, $line-height: 1.0) {
+	font-family: var(--font-family-sans);
+	font-size: $font-size;
+	font-weight: $font-weight;
+	line-height: $line-height;
+}
+
+@mixin ui-subheading($font-size: var(--font-size-stop-2), $font-weight: 300, $line-height: 1.15) {
+	& {
+		font-family: var(--font-family-serif);
+		font-size: $font-size;
+		font-weight: $font-weight;
+		line-height: $line-height;
+		text-transform: uppercase;
+	}
+	&::after {
+		content: "";
+		display: block;
+		height: 0px;
+		width: 100%;
+		margin-block-end: -0.25em;
+	}
+}
+
+@mixin ui-heading($font-size: var(--font-size-stop-2), $font-weight: 300, $line-height: 1.15) {
+	& {
+		font-family: var(--font-family-serif);
+		font-size: $font-size;
+		font-weight: $font-weight;
+		line-height: $line-height;
+		text-transform: uppercase;
+	}
+	&::after {
+		content: "";
+		display: block;
+		height: 0px;
+		width: 100%;
+		margin-block-end: -0.25em;
+	}
+}
+
+@mixin ui-button($with-hover: true, $with-glow: true) {
+	& {
+		padding-inline: var(--button-padding-inline);
+		padding-block: var(--button-padding-block);
+		background: var(--colour-buttons-default-background);
+		color: var(--colour-buttons-default-foreground);
+		box-shadow:
+			inset 0 0 0 0.5px var(--colour-buttons-default-border),
+			0 0 0 0.5px var(--colour-buttons-default-border),
+			0 0 var(--button-glow-spread) 0 var(--colour-buttons-default-glow);
+		border-radius: var(--button-border-radius);
+	}
+	@if $with-glow == false {
+		& {
+			--button-glow-spread: 0px;
+			--colour-buttons-default-glow: transparent;
+		}
+	}
+	@if $with-hover == true {
+		& {
+			cursor: pointer;
+		}
+		@media (any-hover: hover) {
+			&:hover {
+				background: var(--colour-buttons-active-background);
+				color: var(--colour-buttons-active-foreground);
+				box-shadow:
+					inset 0 0 0 0.5px var(--colour-buttons-active-border),
+					0 0 0 0.5px var(--colour-buttons-active-border),
+					0 0 var(--button-glow-spread) 0 var(--colour-buttons-active-glow);
+			}
+		}
+	}
+	&[aria-current="page"] {
+		background: var(--colour-buttons-active-background);
+		color: var(--colour-buttons-active-foreground);
+		box-shadow:
+			inset 0 0 0 0.5px var(--colour-buttons-active-border),
+			0 0 0 0.5px var(--colour-buttons-active-border),
+			0 0 var(--button-glow-spread) 0 var(--colour-buttons-active-glow);
+	}
+}

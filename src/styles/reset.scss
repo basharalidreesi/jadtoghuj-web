@@ -1,0 +1,85 @@
+@charset "UTF-8";
+
+/* Set body defaults */
+body {
+	min-height: 100vh;
+}
+
+/* Box sizing rules */
+*, *::before, *::after {
+	box-sizing: border-box;
+}
+
+/* Remove default margin, padding in favour of better control in authored CSS */
+*, *::before, *::after {
+	margin: 0;
+	padding: 0;
+}
+
+/* Set text defaults */
+html {
+	font-size: max(16px, 100%);
+	font-family: var(--font-family-mono);
+	font-weight: 400;
+	font-style: normal;
+	line-height: 1.0;
+	color: var(--colour-text);
+}
+
+/* Reset text properties in favour of better control in authored CSS */
+*, *::before, *::after {
+	font-size: inherit;
+	font-family: inherit;
+	font-weight: inherit;
+	font-style: inherit;
+	line-height: inherit;
+	color: inherit;
+	text-align: inherit;
+	text-decoration: inherit;
+}
+
+/* Make sure text wrapping behaves as desired */
+*, *::before, *::after {
+	overflow-wrap: break-word;
+}
+
+/* Prevent font size inflation */
+html {
+	-moz-text-size-adjust: none;
+	-webkit-text-size-adjust: none;
+	text-size-adjust: none;
+}
+
+/* Make images easier to work with */
+img, picture {
+	max-width: 100%;
+	display: block;
+}
+
+/* Make svgs easier to work with */
+svg {
+	overflow: visible;
+	fill: currentColor;
+	stroke-width: 0px;
+}
+
+/* Make svg elements have consistent strokes */
+svg * {
+	vector-effect: non-scaling-stroke;
+}
+
+/* Anything that has been anchored should have extra scroll margin */
+:target {
+	scroll-margin-block: 5ex;
+}
+
+/* Unset button appearance */
+button {
+	all: unset;
+}
+
+/* Restore button focusability after unsetting its appearance */
+button:focus-visible {
+	outline: 5px auto Highlight;
+	outline: 5px auto -webkit-focus-ring-color;
+}

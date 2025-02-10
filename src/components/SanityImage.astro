@@ -1,0 +1,26 @@
+---
+import type { SanityAsset } from "@sanity/image-url/lib/types/types";
+import { urlForSanityImage } from "../lib/utils";
+
+const {
+	node: {
+		asset,
+	},
+	alt,
+} = Astro.props;
+
+export type Props = {
+	node: {
+		asset?: SanityAsset;
+	};
+	alt: string;
+};
+
+const url = asset && urlForSanityImage(asset).url();
+const webpUrl = asset && urlForSanityImage(asset).format("webp").url();
+---
+
+{asset && url && webpUrl && (<picture>
+	<source srcset={webpUrl} type="image/webp" />
+	<img src={url} alt={alt} />
+</picture>)}

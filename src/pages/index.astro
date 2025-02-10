@@ -1,16 +1,256 @@
 ---
+import type { Project } from "../sanity/sanity.types";
+import sanityClient from "../sanity/sanity.cli";
+import groq from "groq";
+import Layout from "../layouts/Layout.astro";
+import SanityImage from "../components/SanityImage.astro";
 
+const projects: Project[] = await sanityClient.fetch(groq`*[_type == "project" && defined(slug.current)] {
+	title,
+	slug,
+	lookContent,
+	mediaContent,
+}`);
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout>
+	<h1>
+		Homepage
+	</h1>
+	<div class="container" style="
+		--colour-entries-default-background: #fff;
+		--colour-entries-active-background: aqua;
+		--colour-entries-separator: #999;
+	">
+		{projects && projects.length !== 0 && (
+			<h2>
+				Projects
+			</h2>
+			<div class="projectArray" data-display-mode="looks"> <!-- looks | projects | details -->
+				{projects.map((project) => {
+					const hasMedia = project.mediaContent && project.mediaContent.length !== 0;
+					const Wrapper = hasMedia ? "a" : "div";
+					return (
+						<div class="project" data-active={hasMedia ? "true" : "false"}>
+							<h3>
+								{project.title}
+							</h3>
+							{project.lookContent && project.lookContent.length !== 0 && project.lookContent.filter((look) => look.asset)?.length !== 0 && project.lookContent.filter((look) => look.asset).map((look) => {
+								return (
+									<div class="card-outer">
+										<Wrapper class="card-threshold" href={hasMedia ? `/projects/${project.slug?.current}` : null}>
+												<div class="card-inner">
+													<SanityImage node={look} alt="" />
+												</div>
+										</Wrapper>
+									</div>
+								);
+							})}
+						</div>
+					);
+				})}
+			</div>
+			<!-- <div class="ribbon">
+				<button class="switch" name="projects-switch" value="looks">Looks</button>
+				<button class="switch" name="projects-switch" value="details">Details</button>
+			</div> -->
+			<div class="tooltip" data-coming-soon="Coming Soon"></div>
+		)}
+	</div>
+</Layout>
+
+<script>
+	const tooltip = document.querySelector(".tooltip") as HTMLElement;
+	const projects = document.querySelectorAll(".project");
+	projects?.forEach((project) => {
+		if (!tooltip) { return; };
+		project.addEventListener("mouseenter", () => {
+			const hasMedia = project.getAttribute("data-active") === "true";
+			const titleText = project.querySelector("h3")?.textContent || "";
+			tooltip.textContent = hasMedia ? titleText : tooltip.getAttribute("data-coming-soon");
+			tooltip.style.display = "block";
+		});
+		project.addEventListener("mouseleave", () => {
+			tooltip.style.display = "none";
+		});
+		project.addEventListener("mousemove", (event) => {
+			const offset = 16;
+			const margin = 16;
+			let left = (event as MouseEvent).pageX + offset;
+			let top = (event as MouseEvent).pageY + offset;
+			const xViewport = (event as MouseEvent).pageX - window.scrollX;
+			const yViewport = (event as MouseEvent).pageY - window.scrollY;
+			const tooltipWidth = tooltip.offsetWidth;
+			const tooltipHeight = tooltip.offsetHeight;
+			if (xViewport + offset + tooltipWidth + margin > window.innerWidth) {
+				left = (event as MouseEvent).pageX - tooltipWidth - offset;
+			};
+			if (yViewport + offset + tooltipHeight + margin > window.innerHeight) {
+				top = (event as MouseEvent).pageY - tooltipHeight - offset;
+			};
+			tooltip.style.left = left + "px";
+			tooltip.style.top = top + "px";
+		});
+	});
+</script>
+
+<style lang="scss">
+	// imports
+	@use "../styles/mixins";
+
+	// general setup
+	:root {
+		// looks
+		--looks-grid-columns: 7;
+		--looks-grid-aspect-ratio: 1 / 2;
+		// entries
+		--entries-default-opacity: 0.25;
+		--entries-active-opacity: 0.5;
+		// mods
+		@media (max-width: 1280px) {
+			--looks-grid-columns: 6;
+		}
+		@media (max-width: 1024px) {
+			--looks-grid-columns: 5;
+		}
+		@media (max-width: 768px) {
+			--looks-grid-columns: 4;
+		}
+		@media (max-width: 512px) {
+			--looks-grid-columns: 3;
+		}
+	}
+
+	// general layouting
+	.container {
+		display: flex;
+		flex-flow: column;
+		row-gap: calc(var(--page-padding-y) / 2);
+	}
+	.projectArray[data-display-mode="looks"] {
+		& {
+			display: grid;
+			grid-template-columns: repeat(var(--looks-grid-columns), 1fr);
+			row-gap: var(--page-padding-y);
+			column-gap: var(--page-padding-x);
+			// margin-block-start: calc(var(--page-padding-y) / 2);
+		}
+		.project {
+			display: contents;
+		}
+		.card-outer {
+			aspect-ratio: var(--looks-grid-aspect-ratio);
+		}
+		div.card-threshold {
+			width: 100%;
+			height: 100%;
+		}
+		.card-inner {
+			width: 100%;
+			height: 100%;
+		}
+		:global(img, picture) {
+			width: auto;
+			height: 100%;
+		}
+		:global(img) {
+			object-fit: cover;
+			margin: auto;
+		}
+	}
+
+	// specific styling
+	h1,
+	h2,
+	h3 {
+		@include mixins.hidden;
+	}
+	.projectArray[data-display-mode="looks"] {
+		.card-outer {
+			position: relative;
+		}
+		.card-outer::before {
+			content: "";
+			position: absolute;
+			inset: 0;
+			border-radius: 50%;
+			filter: blur(1rem);
+			background: var(--colour-entries-default-background);
+			opacity: var(--entries-default-opacity);
+		}
+		.card-outer:last-of-type::after {
+			content: "";
+			position: absolute;
+			top: 0;
+			right: calc(var(--page-padding-x) / 2 * -1);
+			display: block;
+			height: 100%;
+			width: 1px;
+			background: var(--colour-entries-separator);
+			pointer-events: none;
+		}
+		.card-inner {
+			mask-image: linear-gradient(to right, transparent, black 1.5rem, black calc(100% - 1.5rem), transparent);
+		}
+		.card-threshold::before {
+			content: "";
+			position: absolute;
+			left: calc(var(--page-padding-x) / 2 * -1);
+			right: calc(var(--page-padding-x) / 2 * -1);
+			top: 0;
+			bottom: 0;
+		}
+		.project[data-active="true"] {
+			@media (any-hover: hover) {
+				&:hover .card-outer::before {
+					background: var(--colour-entries-active-background);
+					opacity: var(--entries-active-opacity);
+				}
+			}
+		}
+		.project[data-active="false"] {
+			:global(img) {
+				filter: grayscale(1);
+			}
+			// @media (any-hover: hover) {
+			// 	.card-outer:hover :global(img) {
+			// 		filter: grayscale(0);
+			// 	}
+			// }
+		}
+	}
+	.ribbon {
+		& {
+			position: sticky;
+			bottom: calc(var(--page-padding-y) / 2);
+			align-self: center;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			column-gap: var(--button-padding-block);
+			padding: calc(var(--button-padding-block) / 3);
+			background: var(--colour-buttons-default-background);
+			border-radius: var(--button-border-radius);
+			z-index: 99;
+		}
+		span {
+			@include mixins.ui-heading($line-height: 1.0);
+		}
+	}
+	.switch {
+		display: block;
+		@include mixins.ui-button;
+		@include mixins.ui-subheading($line-height: 1.0);
+		@include mixins.nowrap;
+	}
+	.tooltip {
+		display: none;
+		position: absolute;
+		pointer-events: none;
+		z-index: 99;
+		opacity: 0.75;
+		@include mixins.ui-button($with-hover: false, $with-glow: false);
+		@include mixins.ui-subheading($line-height: 1.0);
+		@include mixins.nowrap;
+	}
+</style>

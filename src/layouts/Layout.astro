@@ -1,0 +1,345 @@
+---
+import type { StudioInformation, WebsiteGlobals } from "../sanity/sanity.types";
+import sanityClient from "../sanity/sanity.cli";
+import groq from "groq";
+import "../styles/reset.scss";
+import Logo from "../components/Logo.astro";
+
+const studioInformation: StudioInformation = await sanityClient.fetch(groq`*[_id == "studioInformation"][0] {
+	name,
+	instagramLink,
+	shortDescription,
+	longDescription,
+}`);
+const websiteGlobals: WebsiteGlobals = await sanityClient.fetch(`*[_id == "websiteGlobals"][0] {
+	analyticsSnippet,
+}`);
+
+type Props = {
+	title?: string;
+	description?: string;
+	// TODO keywords?: string[];
+	// TODO image?: null;
+};
+
+const {
+	title,
+	description,
+	// TODO keywords,
+	// TODO image,
+} = Astro.props;
+
+const pageTitle = [Astro.url.pathname === "/" ? null : title, studioInformation.name]?.filter(Boolean)?.join(" · ");
+const pageDescription = description || studioInformation.shortDescription;
+const pageCanonicalUrl = Astro.url.href;
+// TODO keywords
+// TODO image
+---
+
+<html lang="en" style="
+	--colour-text: #000;
+	--colour-gradient-top: #fff;
+	--colour-gradient-bottom: #91a3b0;
+	--colour-buttons-default-background: #fff;
+	--colour-buttons-default-foreground: #000;
+	--colour-buttons-default-glow: #c1cad0;
+	--colour-buttons-default-border: #999;
+	--colour-buttons-active-background: #000;
+	--colour-buttons-active-foreground: #fff;
+	--colour-buttons-active-glow: #c1cad0;
+	--colour-buttons-active-border: #000;
+	--colour-logo-gradient-top: #fff;
+	--colour-logo-gradient-bottom: #91a3b0;
+	--colour-logo-glow: #fff;
+	--colour-logo-border: #666;
+"> <!-- TODO colours -->
+	<head>
+		<!-- basic -->
+		<meta charset="utf-8" />
+		<title>{pageTitle}</title>
+		<meta name="author" content={studioInformation.name} />
+		<meta name="description" content={pageDescription} />
+		<meta name="keywords" content="Keywords" /> <!-- TODO keywords -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+		<meta name="robots" content="max-snippet:-1, max-image-preview:large, max-video-preview:-1" /> <!-- TODO -->
+		<link rel="canonical" href={pageCanonicalUrl} />
+		<link rel="sitemap" href="/sitemap-index.xml" />
+		<meta name="generator" content={Astro.generator} />
+		<!-- favicon -->
+		<link rel="icon" href="/favicon.ico" sizes="32x32" />
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+		<link rel="manifest" href="/manifest.webmanifest" />
+		<!-- og -->
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content={studioInformation.name} />
+		<meta property="og:url" content={pageCanonicalUrl} />
+		<meta property="og:title" content={Astro.url.pathname === "/" ? studioInformation.name : pageTitle} />
+		<meta property="og:description" content={pageDescription} />
+		<meta property="og:image" content="OG Image" /> <!-- TODO image -->
+		<!-- twitter -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:url" content={pageCanonicalUrl} />
+		<meta name="twitter:title" content={Astro.url.pathname === "/" ? studioInformation.name : pageTitle} />
+		<meta name="twitter:description" content={pageDescription} />
+		<meta name="twitter:image" content="Twitter Image" /> <!-- TODO image -->
+		<!--analytics -->
+		{websiteGlobals.analyticsSnippet && websiteGlobals.analyticsSnippet.length !== 0 && (<Fragment set:html={websiteGlobals.analyticsSnippet} />)}
+	</head>
+	<body>
+		<header>
+			<div class="logo">
+				<a href="/">
+					<Logo />
+				</a>
+			</div>
+			<nav> <!-- TODO generate nav, separate into two groups or automatic? -->
+				<div class="navItemsFirstHalf">
+					<a class="navItem" href="/">Home</a>
+					<a class="navItem" href="/">Projects</a>
+					<a class="navItem" href="/">Articles</a>
+					<a class="navItem" href="/">Press</a>
+				</div>
+				<div class="navItemsSecondHalf">
+					<a class="navItem" href="/">The Styling Room</a>
+					<a class="navItem" href="/">About</a>
+					<a class="navItem" href="/">Instagram</a>
+				</div>
+			</nav>
+		</header>
+		<!-- {Astro.url.pathname === "/" && (
+			<div class="splash" data-full-screen="false" data-boxed="true">
+				<div class="splashBackdrop">
+					{/* TODO */}
+					<img src="https://cdn.sanity.io/images/5azy6oei/production/46a8bb84751caaa1c640e7d199636feab3ecd6f4-3544x2362.jpg?w=2500&q=80&auto=format" />
+				</div>
+			</div>
+		)} -->
+		<main>
+			<slot />
+		</main>
+		<footer>
+			<p>{studioInformation.instagramLink}</p>
+			<p>{studioInformation.longDescription}</p>
+		</footer>
+	</body>
+</html>
+
+<style lang="scss">
+	// imports
+	@use "../styles/mixins";
+
+	// general setup
+	:global(:root) {
+		// font families
+		--font-family-sans: "Inter Display", "Helvetica Neue", "Helvetica", "Arial", sans-serif; // TODO add fonts
+		--font-family-serif: "PP Editorial Old", "Times", "Times New Roman", serif; // TODO add fonts
+		--font-family-mono: monospace;
+		// font sizes
+		--font-size-stop-0: 100%;
+		--font-size-stop-1: 112.5%;
+		--font-size-stop-2: 125%;
+		--font-size-stop-3: 137.5%;
+		// page paddings
+		--page-padding-x: 3rem;
+		--page-padding-y: 3rem;
+		--page-safe-area-x: env(safe-area-inset-left, 0px);
+		--page-padding-x-with-safe-area: calc(var(--page-padding-x) + var(--page-safe-area-x));
+		// logo
+		--logo-height: 5rem;
+		--logo-aspectRatio: calc(867 / 256);
+		--logo-width: calc(var(--logo-height) * var(--logo-aspectRatio));
+		--logo-blur: 1rem;
+		--logo-glow-spread: 0.0625rem;
+		// nav
+		// --nav-column-gap: 0.333rem;
+		// --nav-row-gap: 0.444rem;
+		// --nav-padding: 0.666rem;
+		--nav-column-gap: 0px;
+		--nav-row-gap: 0px;
+		--nav-padding: 0px;
+		// buttons
+		// --button-border-radius: 5px;
+		--button-border-radius: 0px;
+		--button-padding-inline: 0.999rem;
+		--button-padding-block: 0.666rem;
+		// --button-glow-spread: 0.333rem;
+		--button-glow-spread: 0px;
+		// mods
+		@media (max-width: 1024px) {
+			--page-padding-x: 2rem;
+			--page-padding-y: 2rem;
+			--logo-height: 4rem;
+		}
+		@media (max-width: 768px) {
+			--page-padding-x: 1rem;
+			--page-padding-y: 1rem;
+			--logo-height: 3rem;
+			--logo-blur: 0.5rem;
+		}
+	}
+
+	// general layouting
+	body {
+		display: flex;
+		flex-direction: column;
+		row-gap: var(--page-padding-y);
+		min-height: 100vh;
+		min-height: 100dvh;
+	}
+	header {
+		padding-inline: var(--page-safe-area-x);
+	}
+	main,
+	footer {
+		padding-inline: var(--page-padding-x-with-safe-area);
+	}
+	main {
+		flex: 1;
+	}
+	footer {
+		padding-block-end: var(--page-padding-y);
+	}
+	header {
+		position: sticky;
+		top: 0;
+		z-index: 100;
+	}
+
+	// specific styling
+	body {
+		background: linear-gradient(to bottom, var(--colour-gradient-top) 10%, var(--colour-gradient-bottom) 100%);
+		background-repeat: no-repeat;
+		background-attachment: fixed;
+		@media (any-hover: none) {
+			background: var(--colour-gradient-bottom);
+			&::before {
+				content: "";
+				position: fixed;
+				top: 0;
+				left: 0;
+				display: block;
+				width: 100vw;
+				height: 100vh;
+				height: 100lvh;
+				background: linear-gradient(to bottom, var(--colour-gradient-top) 10%, var(--colour-gradient-bottom) 100%);
+				background-repeat: no-repeat;
+				background-attachment: initial;
+				background-size: 100vw 100vh;
+				background-size: 100vw 100lvh;
+				-webkit-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+				pointer-events: none;
+				z-index: -1;
+			}
+		}
+	}
+	header {
+		& {
+			display: flex;
+			align-items: start;
+			// pointer-events: none;
+		}
+		& > * {
+			flex: 0;
+		}
+		nav {
+			display: contents;
+		}
+		.navItemsFirstHalf {
+			order: 1;
+		}
+		.logo {
+			order: 2;
+			// pointer-events: all;
+		}
+		.navItemsSecondHalf {
+			order: 3;
+		}
+		.navItemsFirstHalf,
+		.navItemsSecondHalf {
+			width: calc(50vw - var(--logo-width) / 2);
+			display: flex;
+			flex-wrap: wrap;
+			column-gap: var(--nav-column-gap);
+			row-gap: var(--nav-row-gap);
+			padding: var(--nav-padding);
+			// pointer-events: all;
+		}
+		.navItemsFirstHalf {
+			align-items: start;
+		}
+		.navItemsSecondHalf {
+			justify-content: end;
+		}
+		.navItem {
+			display: block;
+			@include mixins.ui-button;
+			@include mixins.ui-subheading($line-height: 1.0);
+			@include mixins.nowrap;
+		}
+		.logo {
+			position: relative;
+			display: flex;
+			justify-content: center;
+			margin-block-start: var(--page-padding-y);
+		}
+		.logo::before {
+			content: "";
+			position: absolute;
+			inset: 0;
+			transform: translateY(10%);
+			background: var(--colour-logo-glow);
+			border-radius: 50%;
+			filter: blur(var(--logo-blur));
+		}
+		.logo a {
+			position: relative;
+		}
+		.logo :global(svg) {
+			display: block;
+			width: auto;
+			height: var(--logo-height);
+			width: var(--logo-width);
+			overflow: visible;
+			stroke: var(--colour-logo-border);
+			stroke-width: 1.7px;
+			stroke-linejoin: round;
+			paint-order: stroke;
+			filter: drop-shadow(0 0 var(--logo-glow-spread) var(--colour-gradient-top));
+		}
+	}
+	// .splash[data-full-screen="true"] {
+	// 	.splashBackdrop {
+	// 		width: 100%;
+	// 		height: 100vh;
+	// 		height: 100lvh;
+	// 	}
+	// 	img {
+	// 		width: 100%;
+	// 		height: 100%;
+	// 		object-fit: cover;
+	// 	}
+	// }
+	// .splash[data-full-screen="false"] {
+	// 	.splashBackdrop {
+	// 		& {
+	// 			width: 100%;
+	// 		}
+	// 		img {
+	// 			width: 100%;
+	// 			height: auto;
+	// 		}
+	// 	}
+	// }
+	// .splash[data-boxed="true"] {
+	// 	margin-inline: var(--page-padding-x-with-safe-area);
+	// 	border-radius: var(--page-padding-x);
+	// 	border: 1px solid var(--colour-borders);
+	// 	overflow: hidden;
+	// }
+	main {}
+	footer {}
+</style>

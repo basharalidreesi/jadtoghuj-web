@@ -1,0 +1,46 @@
+---
+import type { Article } from "../../sanity/sanity.types";
+import sanityClient from "../../sanity/sanity.cli";
+import groq from "groq";
+import type { GetStaticPaths } from "astro";
+import Layout from "../../layouts/Layout.astro";
+
+export const getStaticPaths = (async () => {
+	const articles: Article[] = await sanityClient.fetch(groq`*[_type == "article" && defined(slug.current)] {
+		headline,
+		slug {
+			current,
+		},
+		metadata {
+			title,
+			description,
+			openGraphImage {
+				asset-> {
+					url,
+				},
+			},
+			twitterImage {
+				asset-> {
+					url,
+				},
+			},
+		},
+	}`);
+	return articles?.map((article) => {
+		return {
+			params: {
+				article: article.slug?.current,
+			},
+			props: {
+				...article,
+			},
+		};
+	});
+}) satisfies GetStaticPaths;
+
+const article = Astro.props;
+---
+
+<Layout title={article.metadata?.title || article.headline} description={article.metadata?.description}>
+	<h1>{article.headline}</h1>
+</Layout>

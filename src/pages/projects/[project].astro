@@ -1,0 +1,46 @@
+---
+import type { Project } from "../../sanity/sanity.types";
+import sanityClient from "../../sanity/sanity.cli";
+import groq from "groq";
+import type { GetStaticPaths } from "astro";
+import Layout from "../../layouts/Layout.astro";
+
+export const getStaticPaths = (async () => {
+	const projects: Project[] = await sanityClient.fetch(groq`*[_type == "project" && defined(slug.current)] {
+		title,
+		slug {
+			current,
+		},
+		metadata {
+			title,
+			description,
+			openGraphImage {
+				asset-> {
+					url,
+				},
+			},
+			twitterImage {
+				asset-> {
+					url,
+				},
+			},
+		},
+	}`);
+	return projects?.map((project) => {
+		return {
+			params: {
+				project: project.slug?.current,
+			},
+			props: {
+				...project,
+			},
+		};
+	});
+}) satisfies GetStaticPaths;
+
+const project = Astro.props;
+---
+
+<Layout title={project.metadata?.title || project.title} description={project.metadata?.description}>
+	<h1>{project.title}</h1>
+</Layout>
