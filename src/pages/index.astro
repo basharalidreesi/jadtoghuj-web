@@ -5,12 +5,13 @@ import groq from "groq";
 import Layout from "../layouts/Layout.astro";
 import SanityImage from "../components/SanityImage.astro";
 
-const projects: Project[] = await sanityClient.fetch(groq`*[_type == "project" && defined(slug.current)] {
+const projects: Project[] = await sanityClient.fetch(groq`*[_type == "project" && isHiddenFromListings != true && defined(slug.current)] {
 	title,
 	slug,
+	date,
 	lookContent,
 	mediaContent,
-}`);
+} | order(date desc)`);
 ---
 
 <Layout>
@@ -106,6 +107,8 @@ const projects: Project[] = await sanityClient.fetch(groq`*[_type == "project" &
 		// entries
 		--entries-default-opacity: 0.25;
 		--entries-active-opacity: 0.5;
+		// tooltip
+		--tooltip-opacity: 0.8;
 		// mods
 		@media (max-width: 1280px) {
 			--looks-grid-columns: 6;
@@ -133,7 +136,6 @@ const projects: Project[] = await sanityClient.fetch(groq`*[_type == "project" &
 			grid-template-columns: repeat(var(--looks-grid-columns), 1fr);
 			row-gap: var(--page-padding-y);
 			column-gap: var(--page-padding-x);
-			// margin-block-start: calc(var(--page-padding-y) / 2);
 		}
 		.project {
 			display: contents;
@@ -212,11 +214,6 @@ const projects: Project[] = await sanityClient.fetch(groq`*[_type == "project" &
 			:global(img) {
 				filter: grayscale(1);
 			}
-			// @media (any-hover: hover) {
-			// 	.card-outer:hover :global(img) {
-			// 		filter: grayscale(0);
-			// 	}
-			// }
 		}
 	}
 	.ribbon {
@@ -248,7 +245,7 @@ const projects: Project[] = await sanityClient.fetch(groq`*[_type == "project" &
 		position: absolute;
 		pointer-events: none;
 		z-index: 99;
-		opacity: 0.75;
+		opacity: var(--tooltip-opacity);
 		@include mixins.ui-button($with-hover: false, $with-glow: false);
 		@include mixins.ui-subheading($line-height: 1.0);
 		@include mixins.nowrap;
