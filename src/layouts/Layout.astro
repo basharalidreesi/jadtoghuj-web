@@ -42,11 +42,13 @@ const pageCanonicalUrl = Astro.url.href;
 	--colour-gradient-bottom: #91a3b0;
 	--colour-buttons-default-background: #fff;
 	--colour-buttons-default-foreground: #000;
-	--colour-buttons-default-glow: #c1cad0;
+	--colour-buttons-default-glow: TODO#c1cad0;
+	--colour-buttons-default-glow: transparent;
 	--colour-buttons-default-border: #999;
 	--colour-buttons-active-background: #000;
 	--colour-buttons-active-foreground: #fff;
-	--colour-buttons-active-glow: #c1cad0;
+	--colour-buttons-active-glow: TODO#c1cad0;
+	--colour-buttons-active-glow: transparent;
 	--colour-buttons-active-border: #000;
 	--colour-logo-gradient-top: #fff;
 	--colour-logo-gradient-bottom: #91a3b0;
@@ -119,9 +121,11 @@ const pageCanonicalUrl = Astro.url.href;
 			<slot />
 		</main>
 		<footer>
-			<p>{studioInformation.instagramLink}</p>
-			<p>{studioInformation.longDescription}</p>
+			<div class="footer-inner">
+				<p>{studioInformation.longDescription}</p> <!-- TODO make pt -->
+			</div>
 		</footer>
+		<div class="tooltip"></div>
 	</body>
 </html>
 
@@ -163,8 +167,9 @@ const pageCanonicalUrl = Astro.url.href;
 		--button-border-radius: 0px;
 		--button-padding-inline: 0.999rem;
 		--button-padding-block: 0.666rem;
-		// --button-glow-spread: 0.333rem;
-		--button-glow-spread: 0px;
+		--button-glow-spread: 0.333rem;
+		// tooltip
+		--tooltip-opacity: 0.8;
 		// mods
 		@media (max-width: 1024px) {
 			--page-padding-x: 2rem;
@@ -240,7 +245,6 @@ const pageCanonicalUrl = Astro.url.href;
 		& {
 			display: flex;
 			align-items: start;
-			// pointer-events: none;
 		}
 		& > * {
 			flex: 0;
@@ -253,7 +257,6 @@ const pageCanonicalUrl = Astro.url.href;
 		}
 		.logo {
 			order: 2;
-			// pointer-events: all;
 		}
 		.navItemsSecondHalf {
 			order: 3;
@@ -266,7 +269,6 @@ const pageCanonicalUrl = Astro.url.href;
 			column-gap: var(--nav-column-gap);
 			row-gap: var(--nav-row-gap);
 			padding: var(--nav-padding);
-			// pointer-events: all;
 		}
 		.navItemsFirstHalf {
 			align-items: start;
@@ -310,6 +312,22 @@ const pageCanonicalUrl = Astro.url.href;
 			paint-order: stroke;
 			filter: drop-shadow(0 0 var(--logo-glow-spread) var(--colour-gradient-top));
 		}
+		@media (any-hover: hover) {
+			&::before {
+				content: "";
+				position: absolute;
+				inset: 0;
+				bottom: calc(var(--page-padding-y) * -1 - 1rem);
+				backdrop-filter: blur(0px);
+				transition: backdrop-filter 0.166s;
+				mask-image: linear-gradient(to bottom, black calc(100% - var(--page-padding-y) - var(--page-padding-y) / 2), transparent);
+				z-index: -1;
+				pointer-events: none;
+			}
+			&:hover::before {
+				backdrop-filter: blur(4px);
+			}
+		}
 	}
 	// .splash[data-full-screen="true"] {
 	// 	.splashBackdrop {
@@ -341,5 +359,56 @@ const pageCanonicalUrl = Astro.url.href;
 	// 	overflow: hidden;
 	// }
 	main {}
-	footer {}
+	footer {
+		.footer-inner {
+			background: white;
+			padding-inline: var(--page-padding-x);
+			padding-block: var(--page-padding-y);
+			box-shadow: 0 0 0 1px var(--colour-buttons-default-border);
+			border-radius: var(--button-border-radius);
+		}
+	}
+	.tooltip {
+		display: none;
+		position: absolute;
+		pointer-events: none;
+		z-index: 98;
+		opacity: var(--tooltip-opacity);
+		@include mixins.ui-button($with-hover: false, $with-glow: false);
+		@include mixins.ui-subheading($line-height: 1.0);
+		@include mixins.nowrap;
+	}
 </style>
+
+<script>
+	const tooltip = document.querySelector(".tooltip") as HTMLElement;
+	const tooltipEnabledElements = document.querySelectorAll(`[data-tooltip-enabled="true"]`);
+	tooltipEnabledElements?.forEach((element) => {
+		if (!tooltip) { return; };
+		element.addEventListener("mouseenter", () => {
+			tooltip.textContent = element.getAttribute("data-tooltip-text") || "";
+			tooltip.style.display = "block";
+		});
+		element.addEventListener("mouseleave", () => {
+			tooltip.style.display = "none";
+		});
+		element.addEventListener("mousemove", (event) => {
+			const offset = 16;
+			const margin = 16;
+			let left = (event as MouseEvent).pageX + offset;
+			let top = (event as MouseEvent).pageY + offset;
+			const xViewport = (event as MouseEvent).pageX - window.scrollX;
+			const yViewport = (event as MouseEvent).pageY - window.scrollY;
+			const tooltipWidth = tooltip.offsetWidth;
+			const tooltipHeight = tooltip.offsetHeight;
+			if (xViewport + offset + tooltipWidth + margin > window.innerWidth) {
+				left = (event as MouseEvent).pageX - tooltipWidth - offset;
+			};
+			if (yViewport + offset + tooltipHeight + margin > window.innerHeight) {
+				top = (event as MouseEvent).pageY - tooltipHeight - offset;
+			};
+			tooltip.style.left = left + "px";
+			tooltip.style.top = top + "px";
+		});
+	});
+</script>

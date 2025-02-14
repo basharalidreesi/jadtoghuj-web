@@ -7,14 +7,30 @@
 	}
 }
 
-@mixin nowrap($ellipsis: false) {
-	& {
-		white-space: nowrap;
+@mixin nowrap($ellipsis: false, $max-lines: 0) {
+	@if $max-lines <= 1 {
+		& {
+			white-space: nowrap;
+		}
 	}
 	@if $ellipsis == true {
-		text-overflow: ellipsis;
-		overflow: hidden;
-		overflow: clip;
+		@if $max-lines > 1 {
+			& {
+				display: block;
+				display: -webkit-box;
+				height: 1lh * $max-lines;
+				-webkit-line-clamp: $max-lines;
+				-webkit-box-orient: vertical;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+		} @else {
+			& {
+				text-overflow: ellipsis;
+				overflow: hidden;
+				overflow: clip;
+			}
+		}
 	}
 }
 
@@ -28,7 +44,7 @@
 	width: 1px;
 }
 
-@mixin ui-body($font-size: var(--font-size-stop-1), $font-weight: 300, $line-height: 1.3) {
+@mixin ui-body($font-size: var(--font-size-stop-0), $font-weight: 300, $line-height: 1.3) {
 	font-family: var(--font-family-sans);
 	font-size: $font-size;
 	font-weight: $font-weight;
@@ -76,7 +92,7 @@
 	}
 }
 
-@mixin ui-button($with-hover: true, $with-glow: true) {
+@mixin ui-button($with-hover: true, $with-glow: true, $border-radius: var(--button-border-radius)) {
 	& {
 		padding-inline: var(--button-padding-inline);
 		padding-block: var(--button-padding-block);
@@ -86,7 +102,7 @@
 			inset 0 0 0 0.5px var(--colour-buttons-default-border),
 			0 0 0 0.5px var(--colour-buttons-default-border),
 			0 0 var(--button-glow-spread) 0 var(--colour-buttons-default-glow);
-		border-radius: var(--button-border-radius);
+		border-radius: $border-radius;
 	}
 	@if $with-glow == false {
 		& {

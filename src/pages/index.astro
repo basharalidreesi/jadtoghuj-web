@@ -9,6 +9,9 @@ const projects: Project[] = await sanityClient.fetch(groq`*[_type == "project" &
 	title,
 	slug,
 	date,
+	"summary": pt::text(summary),
+	client,
+	category->{name},
 	lookContent,
 	mediaContent,
 } | order(date desc)`);
@@ -27,73 +30,70 @@ const projects: Project[] = await sanityClient.fetch(groq`*[_type == "project" &
 			<h2>
 				Projects
 			</h2>
-			<div class="projectArray" data-display-mode="looks"> <!-- looks | projects | details -->
+			<div class="projectArray" data-display-mode="looks-grid"> <!-- looks-grid | projects-list -->
 				{projects.map((project) => {
+					const hasLooks = project.lookContent && project.lookContent.length !== 0 && project.lookContent.filter((look) => look.asset)?.length !== 0;
 					const hasMedia = project.mediaContent && project.mediaContent.length !== 0;
 					const Wrapper = hasMedia ? "a" : "div";
 					return (
-						<div class="project" data-active={hasMedia ? "true" : "false"}>
-							<h3>
-								{project.title}
-							</h3>
-							{project.lookContent && project.lookContent.length !== 0 && project.lookContent.filter((look) => look.asset)?.length !== 0 && project.lookContent.filter((look) => look.asset).map((look) => {
-								return (
-									<div class="card-outer">
-										<Wrapper class="card-threshold" href={hasMedia ? `/projects/${project.slug?.current}` : null}>
-												<div class="card-inner">
-													<SanityImage node={look} alt="" />
-												</div>
-										</Wrapper>
-									</div>
-								);
-							})}
+						<div class="project" data-active={hasMedia ? "true" : "false"} data-tooltip-enabled="true" data-tooltip-text={hasMedia ? project.title : "Coming Soon"}>
+							<div class="project-title">
+								<h3>
+									{project.title}
+								</h3>
+							</div>
+							{hasLooks && (
+								<div class="project-looks">
+									{project.lookContent?.filter((look) => look.asset).map((look) => {
+										return (
+											<div class="project-look">
+												<Wrapper class="look-card-outer" href={hasMedia ? `/projects/${project.slug?.current}` : null}>
+														<div class="look-card-inner">
+															<SanityImage node={look} alt="" />
+														</div>
+												</Wrapper>
+											</div>
+										);
+									})}
+								</div>
+							)}
+							<div class="project-summary">
+								{project.summary || "—"}
+							</div>
+							<div class="project-client">
+								{project.client || "—"}
+							</div>
+							<div class="project-category">
+								{project.category?.name || "—"}
+							</div>
 						</div>
 					);
 				})}
 			</div>
-			<!-- <div class="ribbon">
-				<button class="switch" name="projects-switch" value="looks">Looks</button>
-				<button class="switch" name="projects-switch" value="details">Details</button>
-			</div> -->
-			<div class="tooltip" data-coming-soon="Coming Soon"></div>
+			<div class="ribbon">
+				<button class="switch" name="projects-switch" value="looks-grid">
+					<span>
+						Looks
+					</span>
+					<svg width="1em" height="1em" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+						<path d="M8 14.5C7 15 5.5 16 5.5 19.5H19.5C19.5 16 18.3416 15.1708 17 14.5C16 14 14 14 14 12.5C14 11 15 10.25 15 8.25C15 6.25 14 5.25 12.5 5.25C11 5.25 10 6.25 10 8.25C10 10.25 11 11 11 12.5C11 14 9 14 8 14.5Z" />
+					</svg>
+				</button>
+				<button class="switch" name="projects-switch" value="projects-list">
+					<span>
+						Details
+					</span>
+					<svg width="1em" height="1em" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+						<path d="M7.10153 17.5001C7.10153 17.8323 6.83221 18.1016 6.5 18.1016C6.16778 18.1016 5.89847 17.8323 5.89847 17.5001C5.89847 17.1678 6.16778 16.8985 6.5 16.8985C6.83221 16.8985 7.10153 17.1678 7.10153 17.5001Z" />
+						<path d="M7.10153 7.5C7.10153 7.83221 6.83221 8.10153 6.5 8.10153C6.16778 8.10153 5.89847 7.83221 5.89847 7.5C5.89847 7.16778 6.16778 6.89847 6.5 6.89847C6.83221 6.89847 7.10153 7.16778 7.10153 7.5Z" />
+						<path d="M7.10153 12.5C7.10153 12.8322 6.83221 13.1015 6.5 13.1015C6.16778 13.1015 5.89847 12.8322 5.89847 12.5C5.89847 12.1678 6.16778 11.8985 6.5 11.8985C6.83221 11.8985 7.10153 12.1678 7.10153 12.5Z" />
+						<path d="M10 7.5H19M10 17.5H19M10 12.5H19" />
+					</svg>
+				</button>
+			</div>
 		)}
 	</div>
 </Layout>
-
-<script>
-	const tooltip = document.querySelector(".tooltip") as HTMLElement;
-	const projects = document.querySelectorAll(".project");
-	projects?.forEach((project) => {
-		if (!tooltip) { return; };
-		project.addEventListener("mouseenter", () => {
-			const hasMedia = project.getAttribute("data-active") === "true";
-			const titleText = project.querySelector("h3")?.textContent || "";
-			tooltip.textContent = hasMedia ? titleText : tooltip.getAttribute("data-coming-soon");
-			tooltip.style.display = "block";
-		});
-		project.addEventListener("mouseleave", () => {
-			tooltip.style.display = "none";
-		});
-		project.addEventListener("mousemove", (event) => {
-			const offset = 16;
-			const margin = 16;
-			let left = (event as MouseEvent).pageX + offset;
-			let top = (event as MouseEvent).pageY + offset;
-			const xViewport = (event as MouseEvent).pageX - window.scrollX;
-			const yViewport = (event as MouseEvent).pageY - window.scrollY;
-			const tooltipWidth = tooltip.offsetWidth;
-			const tooltipHeight = tooltip.offsetHeight;
-			if (xViewport + offset + tooltipWidth + margin > window.innerWidth) {
-				left = (event as MouseEvent).pageX - tooltipWidth - offset;
-			};
-			if (yViewport + offset + tooltipHeight + margin > window.innerHeight) {
-				top = (event as MouseEvent).pageY - tooltipHeight - offset;
-			};
-			tooltip.style.left = left + "px";
-			tooltip.style.top = top + "px";
-		});
-	});
-</script>
 
 <style lang="scss">
 	// imports
@@ -101,15 +101,26 @@ const projects: Project[] = await sanityClient.fetch(groq`*[_type == "project" &
 
 	// general setup
 	:root {
-		// looks
-		--looks-grid-columns: 7;
-		--looks-grid-aspect-ratio: 1 / 2;
 		// entries
 		--entries-default-opacity: 0.25;
 		--entries-active-opacity: 0.5;
-		// tooltip
-		--tooltip-opacity: 0.8;
-		// mods
+	}
+
+	// general layouting
+	.container {
+		display: flex;
+		flex-flow: column;
+		row-gap: var(--page-padding-y);
+	}
+	h1,
+	h2 {
+		@include mixins.hidden;
+	}
+
+	// looks grid
+	:root {
+		--looks-grid-columns: 7;
+		--looks-grid-aspect-ratio: 1 / 2;
 		@media (max-width: 1280px) {
 			--looks-grid-columns: 6;
 		}
@@ -123,14 +134,7 @@ const projects: Project[] = await sanityClient.fetch(groq`*[_type == "project" &
 			--looks-grid-columns: 3;
 		}
 	}
-
-	// general layouting
-	.container {
-		display: flex;
-		flex-flow: column;
-		row-gap: calc(var(--page-padding-y) / 2);
-	}
-	.projectArray[data-display-mode="looks"] {
+	.projectArray[data-display-mode="looks-grid"] {
 		& {
 			display: grid;
 			grid-template-columns: repeat(var(--looks-grid-columns), 1fr);
@@ -140,38 +144,17 @@ const projects: Project[] = await sanityClient.fetch(groq`*[_type == "project" &
 		.project {
 			display: contents;
 		}
-		.card-outer {
+		.project-title {
+			@include mixins.hidden;
+		}
+		.project-looks {
+			display: contents;
+		}
+		.project-look {
+			position: relative;
 			aspect-ratio: var(--looks-grid-aspect-ratio);
 		}
-		div.card-threshold {
-			width: 100%;
-			height: 100%;
-		}
-		.card-inner {
-			width: 100%;
-			height: 100%;
-		}
-		:global(img, picture) {
-			width: auto;
-			height: 100%;
-		}
-		:global(img) {
-			object-fit: cover;
-			margin: auto;
-		}
-	}
-
-	// specific styling
-	h1,
-	h2,
-	h3 {
-		@include mixins.hidden;
-	}
-	.projectArray[data-display-mode="looks"] {
-		.card-outer {
-			position: relative;
-		}
-		.card-outer::before {
+		.project-look::before {
 			content: "";
 			position: absolute;
 			inset: 0;
@@ -180,7 +163,7 @@ const projects: Project[] = await sanityClient.fetch(groq`*[_type == "project" &
 			background: var(--colour-entries-default-background);
 			opacity: var(--entries-default-opacity);
 		}
-		.card-outer:last-of-type::after {
+		.project-look:last-of-type::after {
 			content: "";
 			position: absolute;
 			top: 0;
@@ -191,10 +174,11 @@ const projects: Project[] = await sanityClient.fetch(groq`*[_type == "project" &
 			background: var(--colour-entries-separator);
 			pointer-events: none;
 		}
-		.card-inner {
-			mask-image: linear-gradient(to right, transparent, black 1.5rem, black calc(100% - 1.5rem), transparent);
+		div.look-card-outer {
+			width: 100%;
+			height: 100%;
 		}
-		.card-threshold::before {
+		.look-card-outer::before {
 			content: "";
 			position: absolute;
 			left: calc(var(--page-padding-x) / 2 * -1);
@@ -202,9 +186,28 @@ const projects: Project[] = await sanityClient.fetch(groq`*[_type == "project" &
 			top: 0;
 			bottom: 0;
 		}
+		.look-card-inner {
+			width: 100%;
+			height: 100%;
+			mask-image: linear-gradient(to right, transparent, black 1.5rem, black calc(100% - 1.5rem), transparent);
+		}
+		:global(img),
+		:global(picture) {
+			width: auto;
+			height: 100%;
+		}
+		:global(img) {
+			object-fit: cover;
+			margin: auto;
+		}
+		.project-summary,
+		.project-client,
+		.project-category {
+			display: none;
+		}
 		.project[data-active="true"] {
 			@media (any-hover: hover) {
-				&:hover .card-outer::before {
+				&:hover .project-look::before {
 					background: var(--colour-entries-active-background);
 					opacity: var(--entries-active-opacity);
 				}
@@ -216,38 +219,158 @@ const projects: Project[] = await sanityClient.fetch(groq`*[_type == "project" &
 			}
 		}
 	}
+
+	// projects list
+	.projectArray[data-display-mode="projects-list"] {
+		& {
+			display: flex;
+			flex-flow: column;
+		}
+		.project {
+			position: relative;
+			display: grid;
+			grid-template-columns: repeat(var(--projects-list-columns), 1fr);
+			padding-inline: var(--button-padding-inline);
+			column-gap: var(--button-padding-inline);
+		}
+		.project:first-of-type {
+			border-block-start: 1px solid var(--colour-entries-separator);
+		}
+		.project::before {
+			content: "";
+			position: absolute;
+			inset: 0;
+			border-radius: 9999px;
+			filter: blur(1rem);
+			background: var(--colour-entries-default-background);
+			opacity: var(--entries-default-opacity);
+			z-index: -1;
+		}
+		.project::after {
+			content: "";
+			position: absolute;
+			bottom: 0;
+			display: block;
+			height: 1px;
+			width: 100%;
+			background: var(--colour-entries-separator);
+			pointer-events: none;
+		}
+		.project-looks {
+			display: flex;
+			align-items: start;
+			justify-content: start;
+			column-gap: calc(var(--button-padding-inline) / 2);
+			overflow-x: hidden;
+			// mask-image: linear-gradient(to right, black calc(100% - 3rem), transparent 100%);
+		}
+		.project-look {
+			flex: 0 0 auto;
+		}
+		.project-look:first-of-type a::after {
+			content: "";
+			position: absolute;
+			inset: 0;
+		}
+		:global(img),
+		:global(picture) {
+			width: auto;
+			height: var(--projects-list-look-height);
+		}
+		.project[data-active="true"] {
+			@media (any-hover: hover) {
+				&:hover::before {
+					background: var(--colour-entries-active-background);
+					opacity: var(--entries-active-opacity);
+				}
+			}
+		}
+		.project[data-active="false"] {
+			:global(img) {
+				filter: grayscale(1);
+			}
+		}
+		.project-title,
+		.project-summary,
+		.project-client,
+		.project-category {
+			@include mixins.ui-body;
+			@include mixins.nowrap($ellipsis: true, $max-lines: 2);
+		}
+		@media (min-width: 1025px) {
+			& {
+				--projects-list-columns: 5;
+				--projects-list-look-height: 5rem;
+			}
+			.project {
+				padding-block: calc(var(--page-padding-y) / 2);
+			}
+		}
+		@media (max-width: 1024px) {
+			& {
+				--projects-list-columns: 4;
+				--projects-list-look-height: 4rem;
+			}
+			.project {
+				padding-block: var(--button-padding-block);
+			}
+			.project-client {
+				display: none;
+			}
+		}
+		@media (max-width: 768px) {
+			& {
+				--projects-list-columns: 3;
+				--projects-list-look-height: 3rem;
+			}
+			.project-category {
+				display: none;
+			}
+		}
+	}
+
+	// switch
 	.ribbon {
 		& {
+			align-self: end;
 			position: sticky;
-			bottom: calc(var(--page-padding-y) / 2);
-			align-self: center;
+			bottom: var(--page-padding-y);
 			display: flex;
 			align-items: center;
 			justify-content: center;
 			column-gap: var(--button-padding-block);
-			padding: calc(var(--button-padding-block) / 3);
-			background: var(--colour-buttons-default-background);
-			border-radius: var(--button-border-radius);
 			z-index: 99;
 		}
+		.switch {
+			display: block;
+			@include mixins.ui-button;
+			@include mixins.ui-subheading($line-height: 1.0);
+			@include mixins.nowrap;
+			& {
+				padding: min(var(--button-padding-block), var(--button-padding-inline));
+			}
+		}
 		span {
-			@include mixins.ui-heading($line-height: 1.0);
+			@include mixins.hidden;
+		}
+		svg {
+			// fill: transparent;
+			stroke-linejoin: round;
+			stroke: currentColor;
+			stroke-width: 1.2px;
 		}
 	}
-	.switch {
-		display: block;
-		@include mixins.ui-button;
-		@include mixins.ui-subheading($line-height: 1.0);
-		@include mixins.nowrap;
-	}
-	.tooltip {
-		display: none;
-		position: absolute;
-		pointer-events: none;
-		z-index: 99;
-		opacity: var(--tooltip-opacity);
-		@include mixins.ui-button($with-hover: false, $with-glow: false);
-		@include mixins.ui-subheading($line-height: 1.0);
-		@include mixins.nowrap;
-	}
 </style>
+
+<script>
+	const projectArray = document.querySelector(".projectArray");
+	const buttons = document.querySelectorAll(`button[name="projects-switch"]`);
+	buttons?.forEach((button) => {
+		button.addEventListener("click", (event) => {
+			if (!projectArray) { return; };
+			const value = (event.target as HTMLButtonElement).closest("button")?.getAttribute("value");
+			if (!value) { return; };
+			projectArray.setAttribute("data-display-mode", value);
+		});
+	});
+</script>
